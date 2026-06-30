@@ -6,7 +6,7 @@
 <title>Dimensionamento - Debt Resolutions</title>
 </head>
 <body>
- 
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
@@ -126,10 +126,42 @@ table{border-collapse:collapse;min-width:max-content}
 .tooltip{position:fixed;background:#3d3570ee;color:#fff;font-size:11px;padding:6px 10px;border-radius:7px;pointer-events:none;z-index:999;display:none;line-height:1.6;max-width:230px}
 .toast{position:fixed;bottom:1rem;right:1rem;background:#3d3570;color:#fff;font-size:12px;padding:7px 14px;border-radius:8px;z-index:2000;opacity:0;transition:opacity .3s;pointer-events:none;max-width:280px}
 .toast.show{opacity:1}
+/* TABS */
+.main-tabs{display:flex;gap:4px;margin-right:10px}
+.main-tab{font-size:12px;padding:4px 12px;border:1px solid #b5aee0;border-radius:7px;background:#f5f3fc;color:#5a5088;cursor:pointer;font-weight:500}
+.main-tab:hover{background:#ede9f8}
+.main-tab-active{background:#7060b0!important;color:#fff!important;border-color:#7060b0!important}
+/* FERIAS */
+.fer-toolbar{padding:.4rem .85rem;border-bottom:.5px solid #c5bde8;background:#f5f3fc;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fer-add-btn{font-size:12px;padding:5px 14px;border:1px solid #cc8800;border-radius:7px;background:#fff8e6;color:#854F0B;cursor:pointer;font-weight:600}
+.fer-add-btn:hover{background:#fff3cc}
+.fer-alert{background:#FCEBEB;border:1px solid #F7C1C1;border-radius:8px;padding:6px 12px;font-size:12px;color:#A32D2D;display:flex;align-items:center;gap:10px}
+.fer-alert-btn{font-size:11px;padding:4px 10px;border:1px solid #cc3333;border-radius:6px;background:#fff;color:#cc3333;cursor:pointer;text-decoration:none;white-space:nowrap}
+.fer-alert-btn:hover{background:#FCEBEB}
+.fer-legend{padding:.3rem .85rem;border-bottom:.5px solid #c5bde8;display:flex;gap:8px;flex-wrap:wrap;background:#faf9fe}
+.fer-leg{font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid;color:#5a5088}
+.fer-outer{flex:1;overflow:auto}
+.fer-table{border-collapse:collapse;min-width:max-content}
+.fer-hdr-fixed{background:#7060b0;color:#fff;font-size:11px;font-weight:600;padding:4px 6px;border:.5px solid #b5aee0;position:sticky;left:0;z-index:4;text-align:center;white-space:nowrap}
+.fer-hdr-year{background:#5a5088;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:3px 4px;border:.5px solid #b5aee0}
+.fer-hdr-month{background:#7878b8;color:#fff;font-size:10px;text-align:center;padding:3px 4px;border:.5px solid #b5aee0}
+.fer-hdr-sem{background:#7060b0;color:#fff;font-size:10px;text-align:center;padding:3px 2px;border:.5px solid #b5aee0;min-width:28px}
+.fer-cell-fixed{background:#f5f3fc;border:.5px solid #c5bde8;font-size:11px;padding:3px 6px;white-space:nowrap;position:sticky;z-index:2}
+.fer-cell-fixed:nth-child(1){left:0}
+.fer-cell-fixed:nth-child(2){left:110px}
+.fer-cell-fixed:nth-child(3){left:230px}
+.fer-name{cursor:pointer;color:#2a2250;font-weight:500;background:#ede9f8!important}
+.fer-name:hover{background:#ddd8f8!important}
+.fer-cell{border:.5px solid #e0dcf8;text-align:center;min-width:28px;height:26px;cursor:pointer;vertical-align:middle}
+.fer-cell:hover{background:#ede9f8!important;outline:1px dashed #cc8800;outline-offset:-2px}
+.fer-foot-fixed{background:#b5aee0;color:#2a2250;font-size:10px;padding:3px 6px;border:.5px solid #c5bde8;white-space:nowrap;position:sticky;z-index:2}
+.fer-foot-fixed:nth-child(1){left:0}
+.fer-foot{background:#f0edf9;border:.5px solid #e0dcf8;font-size:10px;text-align:center;padding:2px;min-width:28px}
+.fer-today-col{background:#FAEEDA44!important}
 </style>
- 
- 
- 
+
+
+
 <div class="app">
   <div class="sidebar" id="sidebar">
     <div class="sb-header">
@@ -137,19 +169,19 @@ table{border-collapse:collapse;min-width:max-content}
       <button class="collapse-btn" id="collapseBtn" onclick="toggleSb()">&#8249;</button>
     </div>
     <div class="sb-icons"><div class="sb-icon" onclick="expandSb()">&#8250;</div></div>
- 
+
     <div class="sb-section">
       <div class="sb-label">Ciclo atual</div>
       <div class="ciclo-card" id="cicloInfo">—</div>
     </div>
- 
+
     <div class="sync-section">
       <div class="sb-label">Sincronizar planilha</div>
       <button class="sync-btn" id="syncBtn" onclick="syncSheet()">🔄 Sincronizar agora</button>
       <input class="sync-url" id="syncUrl" placeholder="URL pública CSV da planilha..."/>
       <div class="sync-hint">Cole o link CSV de exportação da aba de ausências.</div>
     </div>
- 
+
     <div class="sb-section">
       <div class="sb-label"><span>Nova ausência</span><button onclick="clearAbsForm()" style="font-size:9px;padding:1px 5px;border:.5px solid #b5aee0;border-radius:4px;background:none;cursor:pointer;color:#8880b8">Limpar</button></div>
       <div class="abs-form">
@@ -160,7 +192,7 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
       <div class="abs-list" id="absList"></div>
     </div>
- 
+
     <div class="sb-section">
       <div class="sb-label">Buscar</div>
       <div class="sb-search"><span>⌕</span><input type="text" placeholder="Nome..." oninput="searchAnalyst(this.value)"/></div>
@@ -202,13 +234,18 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
     </div>
   </div>
- 
+
   <div class="main">
     <div class="topbar">
-      <h1>Dimensionamento - Debt Resolutions</h1>
+      <div class="main-tabs">
+        <button class="main-tab main-tab-active" id="tabDim" onclick="switchMain('dim')">📅 Dimensionamento</button>
+        <button class="main-tab" id="tabFerias" onclick="switchMain('ferias')">🏖️ Controle de Férias</button>
+      </div>
+      <h1 id="topbarTitle" style="font-size:13px">Debt Resolutions</h1>
       <span class="ciclo-badge" id="cicloBadgeTop"></span>
       <span class="edit-badge-top" id="editBadge">✎ Modo edição</span>
     </div>
+    <div id="dimSection" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
     <div class="navbar">
       <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button>
       <span class="nav-label" id="monthLabel"></span>
@@ -226,10 +263,58 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
     </div>
     <div class="grid-outer"><table id="mainTable"></table></div>
+    </div>
+
+    <!-- ABA CONTROLE DE FÉRIAS -->
+    <div id="feriasSection" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div class="fer-toolbar">
+        <button class="fer-add-btn" onclick="openFerModal(null)">+ Nova Férias</button>
+        <div style="flex:1"></div>
+        <div id="feriasAlert"></div>
+      </div>
+      <div class="fer-legend">
+        <span class="fer-leg" style="background:#cc880044;border-color:#cc8800">1 pessoa</span>
+        <span class="fer-leg" style="background:#f59e0b44;border-color:#f59e0b">2 pessoas (limite)</span>
+        <span class="fer-leg" style="background:#ff6b6b44;border-color:#ff6b6b">3+ (aprovação necessária)</span>
+        <span class="fer-leg" style="background:#FCEBEB;border-color:#A32D2D;color:#A32D2D">Prazo vencido</span>
+        <span class="fer-leg" style="background:#FFF3CD;border-color:#854F0B;color:#854F0B">&lt;60 dias</span>
+      </div>
+      <div class="fer-outer"><table id="feriasTable" class="fer-table"></table></div>
+    </div>
+  </div>
+
   </div>
 </div>
- 
-<!-- DRAWER CONFIGURAÇÃO DE EQUIPE -->
+
+<!-- MODAL NOVA FÉRIAS -->
+<div id="ferOverlay" onclick="closeFerModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1300;backdrop-filter:blur(3px)"></div>
+<div id="ferModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:380px;background:#f0edf9;border:1px solid #b5aee0;border-radius:14px;z-index:1301;flex-direction:column;gap:0;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+  <div style="padding:.9rem 1.1rem .7rem;border-bottom:1px solid #c5bde8;display:flex;align-items:center;justify-content:space-between">
+    <span id="ferModalTitle" style="font-size:14px;font-weight:700;color:#2a2250">Nova Férias</span>
+    <button onclick="closeFerModal()" style="background:#c5bde8;border:1px solid #b5aee0;border-radius:7px;padding:3px 9px;cursor:pointer;font-size:12px;color:#5a5088">✕</button>
+  </div>
+  <div style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.7rem">
+    <div>
+      <div style="font-size:10px;color:#8880b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Analista</div>
+      <select id="ferAnalyst" onchange="validateFerModal()" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250"></select>
+    </div>
+    <div style="display:flex;gap:.6rem">
+      <div style="flex:1">
+        <div style="font-size:10px;color:#8880b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Início</div>
+        <input type="date" id="ferStart" oninput="validateFerModal()" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250">
+      </div>
+      <div style="flex:1">
+        <div style="font-size:10px;color:#8880b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem">Fim</div>
+        <input type="date" id="ferEnd" oninput="validateFerModal()" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250">
+      </div>
+    </div>
+    <div id="ferValidation" style="min-height:48px;background:#ede9f8;border-radius:8px;padding:.5rem .7rem;font-size:12px;display:flex;flex-direction:column;gap:4px"></div>
+  </div>
+  <div style="padding:.7rem 1.1rem .9rem;border-top:1px solid #c5bde8;display:flex;gap:8px">
+    <button onclick="closeFerModal()" style="font-size:12px;padding:8px 14px;border:1px solid #b5aee0;border-radius:8px;background:none;color:#5a5088;cursor:pointer">Cancelar</button>
+    <button id="ferSaveBtn" onclick="saveFerModal()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#cc8800,#b07000);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(180,120,0,.3)">✓ Salvar Férias</button>
+  </div>
+</div>
 <div id="teamOverlay" onclick="closeTeamCfg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1200;backdrop-filter:blur(3px)"></div>
 <div id="teamDrawer" style="position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#f0edf9;border-left:1px solid #b5aee0;z-index:1201;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.5)">
   <div style="padding:1rem 1.2rem .85rem;border-bottom:1px solid #c5bde8;display:flex;align-items:center;justify-content:space-between;background:#f0edf9;flex-shrink:0">
@@ -237,7 +322,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="closeTeamCfg()" style="background:#c5bde8;border:1px solid #b5aee0;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:13px;color:#5a5088">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:1rem 1.2rem">
- 
+
     <!-- ANALISTAS -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5a5088;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
@@ -251,7 +336,7 @@ table{border-collapse:collapse;min-width:max-content}
         <button onclick="teamAddAnalyst()" style="font-size:12px;padding:6px 12px;border:none;border-radius:7px;background:#7060b0;color:#fff;cursor:pointer;font-weight:600">+ Adicionar</button>
       </div>
     </div>
- 
+
     <!-- GESTORES -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2060a0;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
@@ -259,7 +344,7 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
       <div id="teamManagerList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
- 
+
     <!-- DISTRIBUIÇÃO DOS BLOCOS -->
     <div style="background:#ede9f8;border:1px solid #c5bde8;border-radius:8px;padding:.75rem;font-size:11px;color:#5a5088;line-height:2">
       <div style="font-size:11px;font-weight:600;color:#2a2250;margin-bottom:.4rem">Distribuição por bloco</div>
@@ -272,7 +357,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="teamApply()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#7060b0,#6050a8);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(96,85,160,.4)">✓ Aplicar</button>
   </div>
 </div>
- 
+
 <style>
 .team-analyst-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #c5bde8;border-radius:7px;background:#ede9f8;font-size:12px;color:#2a2250}
 .team-analyst-item:hover{background:#ddd8f8}
@@ -283,7 +368,7 @@ table{border-collapse:collapse;min-width:max-content}
 .team-mgr-chip.is-mgr{background:#ddeeff;color:#2060a0;border-color:#2a5080;font-weight:600}
 .team-mgr-chip.is-mgr::before{content:'⬥ '}
 </style>
- 
+
 <div class="ctx-menu" id="ctxMenu">
   <div class="ctx-title" id="ctxTitle">Alterar</div>
   <div class="ctx-item" onclick="applyOverride('Neg 1')"><span class="ci-dot" style="background:#6a3fa0"></span>Neg 1</div>
@@ -299,22 +384,40 @@ table{border-collapse:collapse;min-width:max-content}
 </div>
 <div class="tooltip" id="tooltip"></div>
 <div class="toast" id="toast"></div>
- 
+
 <script>
-const ANALYSTS=["Aline M.","Adriana R.","Almir G.","Camila N.","Camilla T.","Elaine C.","Maraisa F.","Paolla S.","Sophia M.","José N.","Rubya D.","Gabriel S.","Marília","Fabiane","Rianne"];
+// Dados completos dos analistas (nome, ID, email) — mutável para permitir adição/remoção
+let ANALYST_DATA=[
+  {id:"aline.machado",     email:"aline.machado@nubank.com.br",     name:"Aline M."},
+  {id:"adriana.rodrigues", email:"adriana.rodrigues@nubank.com.br", name:"Adriana R."},
+  {id:"almir.goncalves",   email:"almir.goncalves@nubank.com.br",   name:"Almir G."},
+  {id:"camila.nascimento", email:"camila.nascimento@nubank.com.br", name:"Camila N."},
+  {id:"camilla.thome",     email:"camilla.thome@nubank.com.br",     name:"Camilla T."},
+  {id:"elaine.cunico",     email:"elaine.cunico@nubank.com.br",     name:"Elaine C."},
+  {id:"mara.fukui",        email:"mara.fukui@nubank.com.br",        name:"Maraisa F."},
+  {id:"paolla.esteves",    email:"paolla.esteves@nubank.com.br",    name:"Paolla S."},
+  {id:"sophia.pereira",    email:"sophia.pereira@nubank.com.br",    name:"Sophia M."},
+  {id:"jose.nilzo",        email:"jose.nilzo@nubank.com.br",        name:"José N."},
+  {id:"rubya.paula",       email:"rubya.paula@nubank.com.br",       name:"Rubya D."},
+  {id:"gabriel.miguel",    email:"gabriel.miguel@nubank.com.br",    name:"Gabriel S."},
+  {id:"marilia.goncalves", email:"marilia.goncalves@nubank.com.br", name:"Marilia G."},
+  {id:"fabiane.sihel",     email:"fabiane.sihel@nubank.com.br",     name:"Fabiane S."},
+  {id:"rianne.sousa",      email:"rianne.sousa@nubank.com.br",      name:"Rianne S."},
+];
+const ANALYSTS=ANALYST_DATA.map(a=>a.name);
 const MANAGERS=["Camila N.","Camilla T.","José N.","Sophia M."];
 const NON_MANAGERS=ANALYSTS.filter(a=>!MANAGERS.includes(a)); // 11 analistas
 const BLOCKS=["Neg 2","Neg 1","Proc 1"];
 // Distribuição: Neg2=4(1 focal+3nm), Neg1=6(1 focal+1 rotação+4nm), Proc1=5(1 focal+4nm) → total 15
 // Focais(4): mgr[0]→Neg2, mgr[1]→Neg1(focal), mgr[2]→Proc1, mgr[3]→Neg1(rotação, sem focal)
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
- 
+
 const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WD_SHORT=['D','S','T','Q','Q','S','S'];
 const WD_FULL=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const CYCLE_START=new Date(2026,6,6); // 06/07/2026
 const CYCLE_DAYS=15;
- 
+
 // Ciclos em dias CORRIDOS (não úteis)
 function dayDiff(a,b){
   return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/86400000);
@@ -333,7 +436,7 @@ function getCycleDates(cycleNum){
   const ce=new Date(CYCLE_START.getFullYear(),CYCLE_START.getMonth(),CYCLE_START.getDate()+(cycleNum+1)*CYCLE_DAYS-1);
   return{start:cs,end:ce};
 }
- 
+
 function getCycleAssignment(cycleNum){
   // Focais: circular shift por ciclo
   const ms=cycleNum%MANAGERS.length;
@@ -341,7 +444,7 @@ function getCycleAssignment(cycleNum){
   // Analistas não-focales: circular shift por ciclo (passo 3)
   const ns=(cycleNum*3)%NON_MANAGERS.length;
   const nm=[...NON_MANAGERS.slice(ns),...NON_MANAGERS.slice(0,ns)];
- 
+
   return {
     // Neg 2: 4 = 1 mgr + 3 nm
     "Neg 2":[
@@ -370,26 +473,84 @@ function getCycleAssignment(cycleNum){
   };
   // Total: 4+6+5 = 15 ✓ — focais: Neg2→mgr[0], Neg1→mgr[1], Proc1→mgr[2], Rotação→mgr[3] (analista em Neg1)
 }
- 
+
 function toKey(d){return d.toISOString().slice(0,10);}
 function isWeekend(d){return d.getDay()===0||d.getDay()===6;}
 function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 function fmtFull(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function parseDateInput(s){if(!s)return null;const[y,m,d]=s.split('-');return new Date(+y,+m-1,+d);}
- 
-const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marília","fabiane.sihel":"Fabiane","rianne.sousa":"Rianne"};
+
+const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marilia G.","fabiane.sihel":"Fabiane S.","rianne.sousa":"Rianne S."};
+
+// Dimensionamento fixo pré-ciclo (até 03/07/2026), baseado no atual da planilha
+const PRE_CYCLE_ASSIGNMENT={
+  "Neg 1":[
+    {name:"Camilla T.",isMgr:true},
+    {name:"Camila N.", isMgr:false},
+    {name:"Adriana R.",isMgr:false},
+    {name:"Elaine C.", isMgr:false},
+    {name:"Paolla S.", isMgr:false},
+    {name:"Fabiane S.",isMgr:false},
+  ],
+  "Neg 2":[
+    {name:"Sophia M.", isMgr:true},
+    {name:"Gabriel S.",isMgr:false},
+    {name:"Marilia G.",isMgr:false},
+    {name:"Rianne S.", isMgr:false},
+  ],
+  "Proc 1":[
+    {name:"José N.",   isMgr:true},
+    {name:"Aline M.",  isMgr:false},
+    {name:"Almir G.",  isMgr:false},
+    {name:"Maraisa F.",isMgr:false},
+    {name:"Rubya D.",  isMgr:false},
+  ],
+};
 function resolveAnalyst(raw){if(!raw)return null;const k=raw.trim().toLowerCase();if(NAME_VARIANTS[k])return NAME_VARIANTS[k];return ANALYSTS.find(a=>a.toLowerCase()===k)||null;}
- 
+
 const BASE_ABS=[
+  ["aline.machado","Day off","22/04/2026","22/04/2026"],
+  ["adriana.rodrigues","Férias","09/03/2026","22/03/2026"],
   ["adriana.rodrigues","Férias","04/05/2026","08/05/2026"],
+  ["almir.goncalves","Férias","23/02/2026","27/02/2026"],
+  ["almir.goncalves","Férias","13/09/2026","27/09/2026"],
   ["camila.nascimento","Day off","08/05/2026","08/05/2026"],
+  ["camila.nascimento","Férias","29/06/2026","19/07/2026"],
+  ["camilla.thome","Day off","06/03/2026","06/03/2026"],
+  ["camilla.thome","Férias","09/03/2026","02/04/2026"],
+  ["camilla.thome","Férias","18/05/2026","22/05/2026"],
+  ["camilla.thome","Férias","28/12/2026","31/12/2026"],
+  ["elaine.cunico","Férias","12/01/2026","30/01/2026"],
+  ["elaine.cunico","Férias","09/11/2026","18/11/2026"],
+  ["elaine.cunico","Day off","19/11/2026","19/11/2026"],
+  ["jose.nilzo","Day off","30/01/2026","30/01/2026"],
   ["jose.nilzo","Férias","11/05/2026","15/05/2026"],
+  ["jose.nilzo","Férias","15/06/2026","04/07/2026"],
+  ["mara.fukui","Férias","19/02/2026","28/02/2026"],
+  ["mara.fukui","Férias","23/03/2026","27/03/2026"],
+  ["mara.fukui","Férias","16/10/2026","30/10/2026"],
+  ["paolla.esteves","Férias","25/05/2026","08/06/2026"],
+  ["paolla.esteves","Férias","22/11/2026","28/11/2026"],
+  ["paolla.esteves","Day off","10/12/2026","10/12/2026"],
+  ["paolla.esteves","Férias","21/12/2026","28/12/2026"],
+  ["rubya.paula","Férias","09/02/2026","18/02/2026"],
+  ["rubya.paula","Day off","20/04/2026","20/04/2026"],
   ["rubya.paula","Férias","22/04/2026","11/05/2026"],
-  ["camilla.thome","Férias","06/07/2026","22/05/2026"],
+  ["sophia.pereira","Férias","02/02/2026","06/02/2026"],
+  ["sophia.pereira","Férias","06/07/2026","25/07/2026"],
+  ["sophia.pereira","Day off","27/10/2026","27/10/2026"],
+  ["sophia.pereira","Férias","27/12/2026","31/12/2026"],
+  ["gabriel.miguel","Férias","09/03/2026","13/03/2026"],
+  ["gabriel.miguel","Férias","08/06/2026","17/06/2026"],
+  ["gabriel.miguel","Férias","03/08/2026","17/08/2026"],
+  ["gabriel.miguel","Day off","18/08/2026","18/08/2026"],
+  ["rianne.sousa","Férias","06/04/2026","21/04/2026"],
+  ["rianne.sousa","Férias","22/06/2026","26/06/2026"],
+  ["marilia.goncalves","Férias","08/09/2026","12/09/2026"],
   ["fabiane.sihel","Férias","20/05/2026","30/05/2026"],
 ];
 function parseBR(s){if(!s)return null;const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d);}
-let baseAbsences=BASE_ABS.map(([k,t,s,e])=>({name:NAME_VARIANTS[k],type:t,start:parseBR(s),end:parseBR(e),source:'base'})).filter(a=>a.start&&ANALYSTS.includes(a.name));
+let baseAbsences=BASE_ABS.map(([k,t,s,e],i)=>({id:'base-'+i,name:NAME_VARIANTS[k],type:t,start:parseBR(s),end:parseBR(e),source:'base'})).filter(a=>a.start&&ANALYSTS.includes(a.name));
 let manualAbsences=[];
 function allAbs(){return[...baseAbsences,...manualAbsences];}
 function getAbsInfo(name,date){const dk=toKey(date);return allAbs().find(a=>a.name===name&&toKey(a.start)<=dk&&toKey(a.end)>=dk)||null;}
@@ -400,7 +561,7 @@ function hasAbsInMonth(name,y,m){
   return allAbs().some(a=>a.name===name&&toKey(a.start)<=e&&toKey(a.end)>=s);
 }
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
- 
+
 // STATE
 const _now=new Date();
 let curY=_now.getFullYear(),curM=_now.getMonth(),curView='mes',curWk=0;
@@ -408,17 +569,18 @@ let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVa
 let editMode=false;
 const overrides={};
 let ctxName=null,ctxDate=null,ctxCurrent=null;
- 
+
 let sbOpen=true;
 function toggleSb(){sbOpen=!sbOpen;document.getElementById('sidebar').classList.toggle('collapsed',!sbOpen);document.getElementById('collapseBtn').innerHTML=sbOpen?'&#8249;':'&#8250;';}
 function expandSb(){sbOpen=true;document.getElementById('sidebar').classList.remove('collapsed');document.getElementById('collapseBtn').innerHTML='&#8249;';}
- 
+
 function initAbsForm(){
   const sel=document.getElementById('absAnalyst');
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
   const t=toKey(new Date());document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;
 }
 function clearAbsForm(){document.getElementById('absAnalyst').value='';const t=toKey(new Date());document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;}
+function maybeRenderFerias(){const fs=document.getElementById('feriasSection');if(fs&&fs.style.display!=='none')renderFeriasTable();}
 function addAbsence(){
   const name=document.getElementById('absAnalyst').value;
   const type=document.getElementById('absType').value;
@@ -427,12 +589,12 @@ function addAbsence(){
   if(!name){showToast('⚠ Selecione um analista');return;}
   if(!s||!e||s>e){showToast('⚠ Datas inválidas');return;}
   manualAbsences.push({name,type,start:s,end:e,source:'manual',id:Date.now()});
-  renderAbsList();renderSbAnalysts();render();
+  renderAbsList();renderSbAnalysts();render();maybeRenderFerias();
   showToast(`✓ ${name} · ${type} · ${fmt(s)}${toKey(s)!==toKey(e)?' – '+fmt(e):''}`);
   clearAbsForm();
   saveAbsences();
 }
-function removeManualAbs(id){manualAbsences=manualAbsences.filter(a=>a.id!==id);renderAbsList();renderSbAnalysts();render();showToast('Ausência removida — dimensionamento atualizado');saveAbsences();}
+function removeManualAbs(id){manualAbsences=manualAbsences.filter(a=>a.id!==id);renderAbsList();renderSbAnalysts();render();maybeRenderFerias();showToast('Ausência removida — dimensionamento atualizado');saveAbsences();}
 function renderAbsList(){
   const el=document.getElementById('absList');
   if(!manualAbsences.length){el.innerHTML='';return;}
@@ -442,7 +604,7 @@ function renderAbsList(){
     return `<div class="abs-item"><span class="abs-item-type" style="background:${bg[a.type]||'#888'}">${a.type==='Day off'?'DO':a.type==='Férias'?'Fér':'Lic'}</span><span class="abs-item-name">${a.name} · ${r}</span><button class="abs-del" onclick="removeManualAbs(${a.id})">✕</button></div>`;
   }).join('');
 }
- 
+
 async function syncSheet(){
   const url=document.getElementById('syncUrl').value.trim();
   const btn=document.getElementById('syncBtn');
@@ -471,7 +633,7 @@ async function syncSheet(){
     setTimeout(()=>{btn.textContent='🔄 Sincronizar agora';btn.classList.remove('error');},4000);
   }
 }
- 
+
 function setFilter(f,btn){filterMode=f;document.querySelectorAll('.sb-pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');highlighted.clear();renderSbAnalysts();render();}
 function toggleBlock(b,btn){if(blockFilters.has(b)){if(blockFilters.size>1)blockFilters.delete(b);}else blockFilters.add(b);btn.classList.toggle('active',blockFilters.has(b));render();}
 function searchAnalyst(v){searchVal=v.toLowerCase();renderSbAnalysts();render();}
@@ -495,7 +657,7 @@ function renderSbAnalysts(){
   document.getElementById('cnt-focales').textContent=MANAGERS.length;
   document.getElementById('cnt-ausentes').textContent=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM)).length;
   document.getElementById('cnt-disponiveis').textContent=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM)).length;
- 
+
   // bloco do analista no mês atual
   const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
   const cn=getCycleNumber(refD);
@@ -503,7 +665,7 @@ function renderSbAnalysts(){
   const blockOf={};
   BLOCKS.forEach(b=>asgn[b].forEach(p=>{blockOf[p.name]=b;}));
   const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
- 
+
   document.getElementById('sbAnalysts').innerHTML=list.map(name=>{
     const isMgr=MANAGERS.includes(name),hasAbs=hasAbsInMonth(name,curY,curM),sel=highlighted.has(name);
     const blk=blockOf[name];
@@ -514,7 +676,7 @@ function renderSbAnalysts(){
     </div>`;
   }).join('');
 }
- 
+
 function toggleEditMode(){editMode=!editMode;document.getElementById('editToggle').classList.toggle('on',editMode);document.getElementById('editToggle').textContent=editMode?'✎ Editando...':'✎ Editar';document.getElementById('editBadge').style.display=editMode?'inline-flex':'none';render();if(editMode)showToast('Modo edição ativo — clique em qualquer célula');}
 function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=`${name} · ${fmt(dateObj)}`;menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
 function closeCtx(){document.getElementById('ctxMenu').style.display='none';}
@@ -529,7 +691,7 @@ function renderEditList(){
   el.innerHTML=keys.map(k=>{const[name,dk]=k.split('|');const val=overrides[k];return `<div class="edit-item"><span class="edit-badge-sb" style="background:${bgMap[val]||'#888'}">${val}</span><span style="flex:1;font-size:10px">${name}<br><span style="opacity:.6">${dk.slice(5).replace('-','/')}</span></span><button class="edit-del" onclick="removeOverrideKey('${k}')">✕</button></div>`;}).join('');
 }
 document.addEventListener('click',e=>{if(!document.getElementById('ctxMenu').contains(e.target))closeCtx();});
- 
+
 function setView(v){
   curView=v;
   ['btnMes','btnSem','btnCiclo'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['mes','semana','ciclo'][i]===v));
@@ -569,7 +731,7 @@ function getDays(){
   if(curView==='ciclo'){const{start,end}=getCycleDates(curWk);if(!start||!end)return[];const days=[];const d=new Date(start);while(toKey(d)<=toKey(end)){days.push(new Date(d));d.setDate(d.getDate()+1);}return days;}
   return[];
 }
- 
+
 function showTip(e,name,date,block,cycleNum){
   const tip=document.getElementById('tooltip');
   const abs=getAbsInfo(name,date);
@@ -586,14 +748,24 @@ function showTip(e,name,date,block,cycleNum){
   tip.innerHTML=h;tip.style.display='block';
   tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY-8)+'px';
 }
+function showFerTip(e,html){
+  const tip=document.getElementById('tooltip');
+  tip.innerHTML=html;tip.style.display='block';
+  tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY-8)+'px';
+}
 function hideTip(){document.getElementById('tooltip').style.display='none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
- 
+
 function updateCicloInfo(date){
   const beforeStart=date<CYCLE_START;
   if(beforeStart){
-    document.getElementById('cicloInfo').innerHTML=`<strong>Aguardando início</strong><br>Dimensionamento começa em<br><strong>06/07/2026</strong>`;
-    document.getElementById('cicloBadgeTop').textContent='Início: 06/07/2026';
+    const pa=PRE_CYCLE_ASSIGNMENT;
+    document.getElementById('cicloInfo').innerHTML=
+      `<strong>Pré-ciclo</strong><br>até 03/07/2026<br>
+      <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${pa['Neg 2'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
+      <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${pa['Neg 1'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
+      <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${pa['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
+    document.getElementById('cicloBadgeTop').textContent='Pré-ciclo · até 03/07/2026';
     return;
   }
   const cn=getCycleNumber(date);
@@ -606,7 +778,7 @@ function updateCicloInfo(date){
     <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
   document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
- 
+
 function render(){
   // Desabilita botão de mês anterior se estiver no mês atual
   const now=new Date();
@@ -621,7 +793,7 @@ function render(){
   const refDate=days.find(d=>!isWeekend(d))||new Date(curY,curM,18);
   updateCicloInfo(refDate);
   if(!analysts.length){tbl.innerHTML=`<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>`;return;}
- 
+
   const sub=curView==='semana'?` · Sem ${curWk+1}`:curView==='ciclo'?` · Ciclo ${curWk+1}`:'';
   let h=`<thead><tr><td class="hdr-analistas">Analistas (${analysts.length})</td><td class="hdr-blocos" colspan="${days.length}">Blocos de tratativa — ${MONTHS_PT[curM]} ${curY}${sub}${editMode?' ✎':''}</td></tr>`;
   h+=`<tr><td class="hdr-analistas" style="font-size:10px;opacity:.7">Nome · ciclo atual</td>`;
@@ -633,7 +805,7 @@ function render(){
     </td>`;
   });
   h+=`</tr></thead><tbody>`;
- 
+
   analysts.forEach(name=>{
     const isMgr=MANAGERS.includes(name);
     // bloco de referência para label
@@ -644,17 +816,19 @@ function render(){
     if(!beforeStart){
       const refAsgn=getCycleAssignment(getCycleNumber(refD));
       for(const b of BLOCKS){if(refAsgn[b].find(p=>p.name===name)){refBlock=b;break;}}
+    } else {
+      for(const b of BLOCKS){if(PRE_CYCLE_ASSIGNMENT[b]&&PRE_CYCLE_ASSIGNMENT[b].find(p=>p.name===name)){refBlock=b;break;}}
     }
     const rbColor=blkColor[refBlock]||'#555';
-    const tagBg=beforeStart?'#555':rbColor;
-    const tagLabel=beforeStart?'—':refBlock;
- 
+    const tagBg=rbColor;
+    const tagLabel=refBlock;
+
     h+=`<tr>
       <td class="nome-cell${isMgr?' mgr':''}" onclick="toggleHighlight('${name}')">
         ${name}${isMgr?' ⬥':''}
         <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${tagLabel}</span>
       </td>`;
- 
+
     days.forEach(d=>{
       const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
       if(wk){h+=`<td class="day-cell wknd${cs?' ciclo-start':''}"></td>`;return;}
@@ -663,18 +837,21 @@ function render(){
       const ovKey=`${name}|${dk}`;
       const hasOv=overrides.hasOwnProperty(ovKey);
       const abs=getAbsInfo(name,d);
-      const cn=beforeStart?0:getCycleNumber(d);
-      const asgn=getCycleAssignment(cn);
       let block=null;
-      if(!beforeStart){for(const b of BLOCKS){if(asgn[b].find(p=>p.name===name)){block=b;break;}}}
- 
+      if(beforeStart){
+        for(const b of BLOCKS){if(PRE_CYCLE_ASSIGNMENT[b]&&PRE_CYCLE_ASSIGNMENT[b].find(p=>p.name===name)){block=b;break;}}
+      } else {
+        const cn=getCycleNumber(d);
+        const asgn=getCycleAssignment(cn);
+        for(const b of BLOCKS){if(asgn[b].find(p=>p.name===name)){block=b;break;}}
+      }
+      const cn=beforeStart?-1:getCycleNumber(d);
+
       let current=null,cell='';
       if(hasOv){
         current=overrides[ovKey];
         const oc=current==='Neg 1'?'neg1':current==='Neg 2'?'neg2':current==='Proc 1'?'proc1':current==='Férias'?'ferias':current==='Day off'?'dayoff':'medica';
         cell=`<span class="pill p-${oc}">${current}</span><span class="manual-dot"></span>`;
-      } else if(beforeStart){
-        cell=`<span style="font-size:9px;color:#8880b8">—</span>`;
       } else if(abs){
         current=abs.type;
         const isNew=abs.source!=='base';
@@ -686,7 +863,7 @@ function render(){
         const bc=block==='Neg 1'?'neg1':block==='Neg 2'?'neg2':'proc1';
         cell=`<span class="pill p-${bc}">${block}</span>`;
       }
- 
+
       const ne=name.replace(/'/g,"\\'");
       h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode&&!beforeStart?' editable':''}"
         onclick="${editMode&&!beforeStart?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
@@ -695,13 +872,12 @@ function render(){
     });
     h+=`</tr>`;
   });
- 
+
   h+=`<tr><td colspan="${days.length+1}" style="height:5px;background:#ede9f8"></td></tr>`;
   h+=`<tr class="ctrl-row"><td class="ctrl-nome">Disponíveis</td>`;
   days.forEach(d=>{
     if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
     const cs=isCycleStart(d);
-    if(d<CYCLE_START){h+=`<td class="${cs?'ciclo-start':''}" style="color:#555">—</td>`;return;}
     const aus=ANALYSTS.filter(a=>isAbsent(a,d)).length;
     const av=ANALYSTS.length-aus;
     const col=aus>=4?'#ff6b6b':aus>=2?'#ffb347':'#7adb78';
@@ -711,7 +887,6 @@ function render(){
   days.forEach(d=>{
     if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
     const cs=isCycleStart(d);
-    if(d<CYCLE_START){h+=`<td class="${cs?'ciclo-start':''}" style="color:#555">—</td>`;return;}
     const gok=MANAGERS.filter(m=>!isAbsent(m,d)).length;
     const col=gok<=1?'#ff6b6b':gok===2?'#ffb347':'#7adb78';
     h+=`<td style="color:${col}" class="${cs?'ciclo-start':''}">${gok}</td>`;
@@ -719,7 +894,7 @@ function render(){
   h+=`</tr></tbody>`;
   tbl.innerHTML=h;
 }
- 
+
 // ── STORAGE COMPARTILHADO ───────────────────────────────────
 async function saveOverrides(){
   try{if(window.storage)await window.storage.set('dim2026:overrides',JSON.stringify(overrides),true);}catch(e){}
@@ -742,19 +917,20 @@ async function loadShared(){
       });
     }
   }catch(e){}
+  await loadVacLimits();
   renderAbsList();renderSbAnalysts();renderEditList();render();
   showToast('✓ Dados sincronizados com todos os usuários');
 }
- 
+
 initAbsForm();renderSbAnalysts();render();
 loadShared();
- 
+
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
 const TEAM_DEFAULT_MANAGERS = [...MANAGERS];
 let teamAnalysts = [...ANALYSTS];
 let teamManagers = [...MANAGERS];
- 
+
 function openTeamCfg(){
   teamAnalysts = [...ANALYSTS];
   teamManagers = [...MANAGERS];
@@ -766,14 +942,14 @@ function closeTeamCfg(){
   document.getElementById('teamOverlay').style.display = 'none';
   document.getElementById('teamDrawer').style.right = '-440px';
 }
- 
+
 function teamRenderAll(){
   teamRenderAnalysts();
   teamRenderManagers();
   teamRenderPreview();
   document.getElementById('teamAnalystCount').textContent = '(' + teamAnalysts.length + ')';
 }
- 
+
 function teamRenderAnalysts(){
   const el = document.getElementById('teamAnalystList');
   el.innerHTML = teamAnalysts.map((name,i) => {
@@ -786,12 +962,12 @@ function teamRenderAnalysts(){
     '</div>';
   }).join('');
 }
- 
+
 function teamRenderManagers(){
   const el = document.getElementById('teamManagerList');
   const slotLabels = ['Neg 2','Neg 1','Proc 1','Rotação'];
   const slotColors = ['#1a6a6a','#6a3fa0','#1a4a8a','#888888'];
- 
+
   // Slots de focales
   let html = '<div style="margin-bottom:.8rem">';
   html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.5rem">Slots de focal por bloco — clique no analista abaixo para atribuir:</div>';
@@ -805,7 +981,7 @@ function teamRenderManagers(){
     html += '</div>';
   }
   html += '</div></div>';
- 
+
   // Lista de todos os analistas
   html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.4rem">Todos os analistas \u2014 clique para colocar no pr\u00f3ximo slot vazio:</div>';
   html += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
@@ -818,12 +994,12 @@ function teamRenderManagers(){
     html += (isMgr ? '\u25c6 ' : '') + name + '</button>';
   });
   html += '</div>';
- 
+
   el.innerHTML = html;
 }
- 
+
 let teamPendingName = null;
- 
+
 function teamSelectForSlot(name){
   const idx = teamManagers.indexOf(name);
   if(idx >= 0){
@@ -843,12 +1019,12 @@ function teamSelectForSlot(name){
     showToast('Todos os slots ocupados \u2014 clique em \u2715 para liberar um');
   }
 }
- 
+
 function teamRemoveSlot(slotIdx){
   teamManagers.splice(slotIdx, 1);
   teamRenderAll();
 }
- 
+
 function teamRenderPreview(){
   const el = document.getElementById('teamBlockPreview');
   const mgrs = teamManagers;
@@ -869,20 +1045,20 @@ function teamAddAnalyst(){
   input.value = '';
   teamRenderAll();
 }
- 
+
 function teamRemoveAnalyst(name){
   if(!confirm('Remover ' + name + ' da equipe?')) return;
   teamAnalysts = teamAnalysts.filter(a => a !== name);
   teamManagers = teamManagers.filter(a => a !== name);
   teamRenderAll();
 }
- 
- 
- 
+
+
+
 function teamApply(){
   if(teamAnalysts.length < 1){ showToast('A equipe não pode ficar vazia'); return; }
   if(teamManagers.length === 0){ showToast('Defina pelo menos 1 focal'); return; }
- 
+
   // Atualiza as variáveis globais
   ANALYSTS.length = 0;
   teamAnalysts.forEach(a => ANALYSTS.push(a));
@@ -890,20 +1066,308 @@ function teamApply(){
   teamManagers.forEach(m => MANAGERS.push(m));
   NON_MANAGERS.length = 0;
   ANALYSTS.filter(a => !MANAGERS.includes(a)).forEach(a => NON_MANAGERS.push(a));
- 
+
+  // Remove overrides de analistas removidos
+  Object.keys(overrides).forEach(k=>{if(!ANALYSTS.includes(k.split('|')[0]))delete overrides[k];});
+
   closeTeamCfg();
+  // Re-init form dropdown com novos analistas
+  const sel=document.getElementById('absAnalyst');
+  sel.innerHTML='<option value="">Analista...</option>';
+  ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
+  // Atualiza seletor do modal de férias
+  initFerModal();
   renderSbAnalysts();
   render();
-  showToast('✓ Equipe atualizada — dimensionamento recalculado!');
+  maybeRenderFerias();
+  saveOverrides();
+  showToast('✓ Equipe atualizada — ambas as abas atualizadas!');
 }
- 
+
 function teamReset(){
   if(!confirm('Restaurar equipe original?')) return;
   teamAnalysts = [...TEAM_DEFAULT_ANALYSTS];
   teamManagers = [...TEAM_DEFAULT_MANAGERS];
   teamRenderAll();
 }
+
+// ── CONTROLE DE FÉRIAS ──────────────────────────────────────────
+// Dados de férias usam allAbs() como fonte única (baseAbsences + manualAbsences)
+const M1_MAP={
+  "Aline M.":"Veronica C.","Adriana R.":"Thais M.","Almir G.":"Veronica C.",
+  "Camila N.":"Veronica C.","Camilla T.":"Veronica C.","Elaine C.":"Veronica C.",
+  "Maraisa F.":"Thais M.","Paolla S.":"Thais M.","Sophia M.":"Veronica C.",
+  "José N.":"Veronica C.","Rubya D.":"Veronica C.","Gabriel S.":"Thais M.",
+  "Marilia G.":"Veronica C.","Fabiane S.":"Thais M.","Rianne S.":"Veronica C."
+};
+const VAC_LIMIT_RAW={
+  "Aline M.":"2027-02-19","Adriana R.":"2026-05-16","Almir G.":"2026-03-05",
+  "Camila N.":"2026-08-09","Camilla T.":"2026-03-05","Elaine C.":"2026-11-14",
+  "Maraisa F.":"2026-03-05","Paolla S.":"2026-12-19","Sophia M.":"2026-10-17",
+  "José N.":"2026-07-10","Rubya D.":"2026-05-17","Gabriel S.":"2026-03-09",
+  "Marilia G.":"2026-09-03","Fabiane S.":null,"Rianne S.":"2026-04-06"
+};
+// Limites editáveis pelas gestoras (sobrepõem VAC_LIMIT_RAW)
+let vacLimits={};
+function getVacLimit(name){return vacLimits[name]!==undefined?vacLimits[name]:VAC_LIMIT_RAW[name];}
+async function saveVacLimits(){try{if(window.storage)await window.storage.set('dim2026:vacLimits',JSON.stringify(vacLimits),true);}catch(e){}}
+async function loadVacLimits(){try{if(window.storage){const r=await window.storage.get('dim2026:vacLimits',true);if(r&&r.value)vacLimits=JSON.parse(r.value);}}catch(e){}}
+function editVacLimit(name){
+  const cur=getVacLimit(name)||'';
+  const curFmt=cur?new Date(cur+'T00:00:00').toLocaleDateString('pt-BR'):'—';
+  const inp=prompt(`Editar limite de férias — ${name}\nAtual: ${curFmt}\n\nDigite a nova data (DD/MM/AAAA) ou deixe vazio para remover:`,cur?cur.split('-').reverse().join('/'):'');
+  if(inp===null)return;
+  if(!inp.trim()){delete vacLimits[name];saveVacLimits();renderFeriasTable();return;}
+  const parts=inp.trim().split('/');
+  if(parts.length===3){
+    const iso=`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+    vacLimits[name]=iso;saveVacLimits();renderFeriasTable();
+    showToast(`✓ Limite de ${name} atualizado para ${inp}`);
+  } else {showToast('⚠ Formato inválido. Use DD/MM/AAAA');}
+}
+// Férias usam allAbs() como fonte unificada — sem feriasList separado
+const FERIAS_WEEKS=(function(){
+  const wks=[];
+  const d=new Date(2026,0,5); // Primeira segunda-feira de 2026
+  while(d.getFullYear()<=2027){
+    const ws=new Date(d),we=new Date(d);
+    we.setDate(we.getDate()+4);
+    wks.push({start:ws,end:we});
+    d.setDate(d.getDate()+7);
+  }
+  return wks;
+})();
+
+// Férias usam allAbs() como fonte unificada — sem feriasList separado
+function isOnVacWk(name,ws,we){return allAbs().some(f=>f.name===name&&f.start<=we&&f.end>=ws);}
+function getVacWk(name,ws,we){return allAbs().find(f=>f.name===name&&f.start<=we&&f.end>=ws)||null;}
+function countVacWk(ws,we){return ANALYSTS.filter(a=>isOnVacWk(a,ws,we)).length;}
+function countBD(s,e){let c=0;const d=new Date(s);while(d<=e){if(d.getDay()!==0&&d.getDay()!==6)c++;d.setDate(d.getDate()+1);}return c;}
+function maxSimul(s,e){let mx=0;FERIAS_WEEKS.forEach(wk=>{if(wk.start>e||wk.end<s)return;const c=countVacWk(wk.start,wk.end);if(c>mx)mx=c;});return mx;}
+
+function renderFeriasTable(){
+  const tbl=document.getElementById('feriasTable');
+  if(!tbl)return;
+  const today=new Date();
+  let h='<thead>';
+
+  // Linha 1: Anos
+  h+='<tr>';
+  h+='<td class="fer-hdr-fixed" style="min-width:110px;left:0">M1</td>';
+  h+='<td class="fer-hdr-fixed" style="min-width:120px;left:110px">Analista</td>';
+  h+='<td class="fer-hdr-fixed" style="min-width:100px;left:230px">Limite férias</td>';
+  let prevY=null,ySpan=0,yGroups=[];
+  FERIAS_WEEKS.forEach(wk=>{const y=wk.start.getFullYear();if(y!==prevY){if(prevY)yGroups.push({y:prevY,s:ySpan});prevY=y;ySpan=1;}else ySpan++;});
+  if(prevY)yGroups.push({y:prevY,s:ySpan});
+  yGroups.forEach(g=>h+=`<td colspan="${g.s}" class="fer-hdr-year">${g.y}</td>`);
+  h+='</tr>';
+
+  // Linha 2: Meses
+  h+='<tr><td class="fer-hdr-fixed" colspan="3" style="left:0;font-size:9px;color:#ccc;text-align:center">Semana →</td>';
+  let prevM=null,mSpan=0,mLabel='';
+  FERIAS_WEEKS.forEach((wk,i)=>{
+    const key=`${wk.start.getFullYear()}-${wk.start.getMonth()}`;
+    if(key!==prevM){
+      if(prevM!==null)h+=`<td colspan="${mSpan}" class="fer-hdr-month">${mLabel}</td>`;
+      prevM=key;mSpan=1;mLabel=MONTHS_PT[wk.start.getMonth()].slice(0,3);
+    }else mSpan++;
+    if(i===FERIAS_WEEKS.length-1)h+=`<td colspan="${mSpan}" class="fer-hdr-month">${mLabel}</td>`;
+  });
+  h+='</tr>';
+
+  // Linha 3: Número da semana no ano
+  h+='<tr><td class="fer-hdr-fixed" colspan="3" style="left:0"></td>';
+  let wnMap={};
+  FERIAS_WEEKS.forEach(wk=>{
+    const y=wk.start.getFullYear();wnMap[y]=(wnMap[y]||0)+1;
+    const wn=wnMap[y];
+    const isTW=today>=wk.start&&today<=wk.end;
+    h+=`<td class="fer-hdr-sem${isTW?' fer-today-col':''}" 
+      onmouseenter="showFerTip(event,'Semana ${wn} · ${wk.start.getFullYear()}<br>${WD_FULL[1]} ${fmt(wk.start)} → ${WD_FULL[5]} ${fmt(wk.end)}')"
+      onmouseleave="hideTip()">${wn}</td>`;
+  });
+  h+='</tr></thead><tbody>';
+
+  // Linhas de analistas
+  ANALYSTS.forEach(name=>{
+    const m1=M1_MAP[name]||'—';
+    const limRaw=getVacLimit(name);
+    const limDate=limRaw?new Date(limRaw+'T00:00:00'):null;
+    const limStr=limDate?fmtFull(limDate):'—';
+    const daysLeft=limDate?Math.ceil((limDate-today)/86400000):999;
+    const limStyle=daysLeft<0?'background:#FCEBEB;color:#A32D2D;font-weight:700':daysLeft<60?'background:#FFF3CD;color:#854F0B;font-weight:600':'';
+    const m1bg=m1.includes('Veronica')?'#2a6099':'#6a3fa0';
+    const ne=name.replace(/'/g,"\\'");
+
+    h+=`<tr>`;
+    h+=`<td class="fer-cell-fixed" style="left:0;font-size:10px;color:#fff;background:${m1bg};text-align:center">${m1}</td>`;
+    h+=`<td class="fer-cell-fixed fer-name" style="left:110px" onclick="openFerModal('${ne}')">${name} <span style="font-size:9px;opacity:.5">＋</span></td>`;
+    h+=`<td class="fer-cell-fixed" style="left:230px;font-size:10px;text-align:center;${limStyle};cursor:pointer" onclick="editVacLimit('${ne}')" title="Clique para editar">${limStr} <span style="opacity:.4;font-size:9px">✎</span></td>`;
+
+    FERIAS_WEEKS.forEach(wk=>{
+      const isTW=today>=wk.start&&today<=wk.end;
+      const vac=getVacWk(name,wk.start,wk.end);
+      let cStyle=isTW?'background:#FAEEDA44;':'';
+      let cContent='',cClick='';
+      if(vac){
+        const cnt=countVacWk(wk.start,wk.end);
+        const bg=cnt>=3?'#ff6b6b':cnt>=2?'#f59e0b':'#cc8800';
+        cStyle+=`background:${bg}33;`;
+        // Detect start/end of period for rounded bar
+        const isS=toKey(wk.start)>=toKey(vac.start);
+        const isE=toKey(wk.end)>=toKey(vac.end);
+        cContent=`<span style="display:block;height:9px;background:${bg};border-radius:${isS?'4px':'0'} ${isE?'4px':'0'} ${isE?'4px':'0'} ${isS?'4px':'0'};margin:2px 1px"></span>`;
+        cClick=`onclick="removeFerById(${vac.id})"`;
+      }else{
+        cClick=`onclick="openFerModalWeek('${ne}','${toKey(wk.start)}','${toKey(wk.end)}')"`;
+      }
+      h+=`<td class="fer-cell${isTW?' fer-today-col':''}" style="${cStyle}" ${cClick} title="${name} · Sem ${wnMap[wk.start.getFullYear()]} · ${fmt(wk.start)}–${fmt(wk.end)}">${cContent}</td>`;
+    });
+    h+='</tr>';
+  });
+
+  // Rodapé: contagem por semana
+  h+='<tr><td class="fer-foot-fixed" colspan="3" style="left:0;text-align:center;font-weight:700">Simultâneos / semana</td>';
+  FERIAS_WEEKS.forEach(wk=>{
+    const isTW=today>=wk.start&&today<=wk.end;
+    const cnt=countVacWk(wk.start,wk.end);
+    const col=cnt>=3?'#ff6b6b':cnt>=2?'#f59e0b':cnt===1?'#27ae60':'';
+    h+=`<td class="fer-foot${isTW?' fer-today-col':''}" style="${col?`background:${col}22;color:${col};font-weight:700`:''}">${cnt||''}</td>`;
+  });
+  h+='</tr></tbody>';
+  tbl.innerHTML=h;
+  updateFeriasAlert();
+  // Scroll to today
+  setTimeout(()=>{
+    const todayCol=tbl.querySelector('.fer-today-col');
+    if(todayCol)todayCol.scrollIntoView({inline:'center',block:'nearest'});
+  },100);
+}
+
+function updateFeriasAlert(){
+  const el=document.getElementById('feriasAlert');
+  if(!el)return;
+  const today=new Date();
+  const warns=[];
+  FERIAS_WEEKS.forEach(wk=>{
+    if(wk.end<today)return;
+    const cnt=countVacWk(wk.start,wk.end);
+    if(cnt>=3){
+      const who=ANALYSTS.filter(a=>isOnVacWk(a,wk.start,wk.end)).join(', ');
+      warns.push(`${fmt(wk.start)}–${fmt(wk.end)}: ${cnt} pessoas (${who})`);
+    }
+  });
+  if(warns.length){
+    const sub=encodeURIComponent('Aprovação de Férias — 3+ simultâneos');
+    const body=encodeURIComponent('Olá,\n\nHá períodos com 3 ou mais analistas em férias simultâneas:\n\n'+warns.join('\n')+'\n\nFavor aprovar ou ajustar.\n\nObrigada.');
+    const href=`mailto:thais.mello@nubank.com.br,veronica.carvalho@nubank.com.br?subject=${sub}&body=${body}`;
+    el.innerHTML=`<div class="fer-alert">⚠️ ${warns.length} período(s) com 3+ férias simultâneas — aprovação necessária &nbsp;<a href="${href}" class="fer-alert-btn">📧 Solicitar aprovação</a></div>`;
+  }else{
+    el.innerHTML='';
+  }
+}
+
+// Inicializa o select de analistas no modal
+function initFerModal(){
+  const sel=document.getElementById('ferAnalyst');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Selecionar analista...</option>';
+  ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
+}
+
+function openFerModal(name){
+  initFerModal();
+  if(name){
+    document.getElementById('ferAnalyst').value=name;
+    document.getElementById('ferModalTitle').textContent='Nova Férias — '+name;
+  }else{
+    document.getElementById('ferModalTitle').textContent='Nova Férias';
+  }
+  const t=toKey(new Date());
+  document.getElementById('ferStart').value=t;
+  document.getElementById('ferEnd').value='';
+  validateFerModal();
+  document.getElementById('ferOverlay').style.display='block';
+  document.getElementById('ferModal').style.display='flex';
+}
+
+function openFerModalWeek(name,wkStart,wkEnd){
+  openFerModal(name);
+  document.getElementById('ferStart').value=wkStart;
+  document.getElementById('ferEnd').value=wkEnd;
+  validateFerModal();
+}
+
+function closeFerModal(){
+  document.getElementById('ferOverlay').style.display='none';
+  document.getElementById('ferModal').style.display='none';
+}
+
+function validateFerModal(){
+  const name=document.getElementById('ferAnalyst').value;
+  const sVal=document.getElementById('ferStart').value;
+  const eVal=document.getElementById('ferEnd').value;
+  const el=document.getElementById('ferValidation');
+  const btn=document.getElementById('ferSaveBtn');
+  if(!name){el.innerHTML='<div style="color:#8880b8">Selecione o analista.</div>';btn.disabled=true;return;}
+  if(!sVal||!eVal){el.innerHTML='<div style="color:#8880b8">Selecione o período.</div>';btn.disabled=true;return;}
+  const s=new Date(sVal+'T00:00:00'),e=new Date(eVal+'T00:00:00');
+  if(e<s){el.innerHTML='<div style="color:#cc3333">❌ A data fim deve ser após o início.</div>';btn.disabled=true;return;}
+  const bd=countBD(s,e);
+  const curSimul=maxSimul(s,e);
+  const newSimul=curSimul+1;
+  const durOk=bd>=5;
+  let h='';
+  h+=`<div style="color:${durOk?'#27500A':'#A32D2D'}">${durOk?'✅':'❌'} Duração: <b>${bd}</b> dia(s) útil(eis) ${durOk?'— ok':'— mínimo 5'}</div>`;
+  const warn3=newSimul>=3;
+  h+=`<div style="color:${warn3?'#854F0B':'#27500A'}">${warn3?'⚠️':'✅'} Simultâneos: <b>${newSimul}</b> pessoa(s) — ${warn3?'aprovação necessária':'dentro do limite'}</div>`;
+  if(warn3){
+    const sub=encodeURIComponent('Aprovação de Férias — '+name);
+    const body=encodeURIComponent(`Olá,\n\nSolicitamos aprovação para férias de ${name} de ${fmtFull(s)} a ${fmtFull(e)}.\nHaverá ${newSimul} analistas em férias simultaneamente neste período.\n\nAguardamos retorno.\nObrigada.`);
+    h+=`<a href="mailto:thais.mello@nubank.com.br,veronica.carvalho@nubank.com.br?subject=${sub}&body=${body}" class="fer-alert-btn" style="margin-top:5px;display:inline-block">📧 Solicitar aprovação</a>`;
+  }
+  el.innerHTML=h;
+  btn.disabled=!durOk;
+}
+
+function saveFerModal(){
+  const name=document.getElementById('ferAnalyst').value;
+  const sVal=document.getElementById('ferStart').value;
+  const eVal=document.getElementById('ferEnd').value;
+  if(!name||!sVal||!eVal)return;
+  const s=new Date(sVal+'T00:00:00'),e=new Date(eVal+'T00:00:00');
+  manualAbsences.push({id:Date.now(),name,type:'Férias',start:s,end:e,source:'manual'});
+  renderAbsList();renderSbAnalysts();render();
+  closeFerModal();
+  renderFeriasTable();
+  saveAbsences();
+  showToast(`✓ Férias de ${name} registrada (${fmt(s)} – ${fmt(e)})`);
+}
+
+function removeFerById(id){
+  // Ausências base não são deletáveis — use o painel lateral para adicionar exceção
+  if(String(id).startsWith('base-')){
+    showToast('ℹ Ausência importada — para remover, use o painel Dimensionamento');return;
+  }
+  if(!confirm('Remover este período de férias?'))return;
+  manualAbsences=manualAbsences.filter(a=>a.id!==id);
+  renderAbsList();renderSbAnalysts();render();
+  renderFeriasTable();
+  saveAbsences();
+  showToast('Férias removida');
+}
+
+// Storage de férias unificado com saveAbsences() — fonte única: allAbs()
+
+function switchMain(tab){
+  const isDim=tab==='dim';
+  document.getElementById('dimSection').style.display=isDim?'flex':'none';
+  document.getElementById('feriasSection').style.display=isDim?'none':'flex';
+  document.getElementById('tabDim').classList.toggle('main-tab-active',isDim);
+  document.getElementById('tabFerias').classList.toggle('main-tab-active',!isDim);
+  if(!isDim)renderFeriasTable();
+}
 </script>
- 
+
 </body>
 </html>
