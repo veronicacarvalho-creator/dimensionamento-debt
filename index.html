@@ -6,7 +6,7 @@
 <title>Dimensionamento - Debt Resolutions</title>
 </head>
 <body>
-
+ 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
@@ -127,9 +127,9 @@ table{border-collapse:collapse;min-width:max-content}
 .toast{position:fixed;bottom:1rem;right:1rem;background:#3d3570;color:#fff;font-size:12px;padding:7px 14px;border-radius:8px;z-index:2000;opacity:0;transition:opacity .3s;pointer-events:none;max-width:280px}
 .toast.show{opacity:1}
 </style>
-
-<h2 class="sr-only">Dimensionamento sem reserva — início 06/07/2026 — Neg2=4, Neg1=6, Proc1=5</h2>
-
+ 
+ 
+ 
 <div class="app">
   <div class="sidebar" id="sidebar">
     <div class="sb-header">
@@ -137,19 +137,19 @@ table{border-collapse:collapse;min-width:max-content}
       <button class="collapse-btn" id="collapseBtn" onclick="toggleSb()">&#8249;</button>
     </div>
     <div class="sb-icons"><div class="sb-icon" onclick="expandSb()">&#8250;</div></div>
-
+ 
     <div class="sb-section">
       <div class="sb-label">Ciclo atual</div>
       <div class="ciclo-card" id="cicloInfo">—</div>
     </div>
-
+ 
     <div class="sync-section">
       <div class="sb-label">Sincronizar planilha</div>
       <button class="sync-btn" id="syncBtn" onclick="syncSheet()">🔄 Sincronizar agora</button>
       <input class="sync-url" id="syncUrl" placeholder="URL pública CSV da planilha..."/>
       <div class="sync-hint">Cole o link CSV de exportação da aba de ausências.</div>
     </div>
-
+ 
     <div class="sb-section">
       <div class="sb-label"><span>Nova ausência</span><button onclick="clearAbsForm()" style="font-size:9px;padding:1px 5px;border:.5px solid #b5aee0;border-radius:4px;background:none;cursor:pointer;color:#8880b8">Limpar</button></div>
       <div class="abs-form">
@@ -160,7 +160,7 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
       <div class="abs-list" id="absList"></div>
     </div>
-
+ 
     <div class="sb-section">
       <div class="sb-label">Buscar</div>
       <div class="sb-search"><span>⌕</span><input type="text" placeholder="Nome..." oninput="searchAnalyst(this.value)"/></div>
@@ -169,7 +169,7 @@ table{border-collapse:collapse;min-width:max-content}
       <div class="sb-label">Analistas</div>
       <div class="sb-pills">
         <button class="sb-pill active" onclick="setFilter('todos',this)">👥 Todos<span class="count" id="cnt-todos"></span></button>
-        <button class="sb-pill" onclick="setFilter('gestores',this)">⬥ Gestores<span class="count" id="cnt-gestores"></span></button>
+        <button class="sb-pill" onclick="setFilter('focales',this)">⬥ Focais<span class="count" id="cnt-focales"></span></button>
         <button class="sb-pill" onclick="setFilter('ausentes',this)">🟡 Com ausência<span class="count" id="cnt-ausentes"></span></button>
         <button class="sb-pill" onclick="setFilter('disponiveis',this)">🟢 Disponíveis<span class="count" id="cnt-disponiveis"></span></button>
       </div>
@@ -193,16 +193,16 @@ table{border-collapse:collapse;min-width:max-content}
     <div class="sb-section">
       <div class="sb-label">Legenda</div>
       <div class="sb-legend">
-        <div class="sb-leg"><span class="leg-sq" style="background:#6a3fa0"></span>Neg 1 — 2 gestores + 4 analistas</div>
-        <div class="sb-leg"><span class="leg-sq" style="background:#1a6a6a"></span>Neg 2 — 1 gestor + 3 analistas</div>
-        <div class="sb-leg"><span class="leg-sq" style="background:#1a4a8a"></span>Proc 1 — 1 gestor + 4 analistas</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#6a3fa0"></span>Neg 1 — 2 focales + 4 analistas</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#1a6a6a"></span>Neg 2 — 1 focal + 3 analistas</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#1a4a8a"></span>Proc 1 — 1 focal + 4 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#cc8800"></span>Férias / ausência</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#00dd00"></span>↺ Início de ciclo</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#854F0B"></span>✎ Editado</div>
       </div>
     </div>
   </div>
-
+ 
   <div class="main">
     <div class="topbar">
       <h1>Dimensionamento - Debt Resolutions</h1>
@@ -228,7 +228,7 @@ table{border-collapse:collapse;min-width:max-content}
     <div class="grid-outer"><table id="mainTable"></table></div>
   </div>
 </div>
-
+ 
 <!-- DRAWER CONFIGURAÇÃO DE EQUIPE -->
 <div id="teamOverlay" onclick="closeTeamCfg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1200;backdrop-filter:blur(3px)"></div>
 <div id="teamDrawer" style="position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#f0edf9;border-left:1px solid #b5aee0;z-index:1201;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.5)">
@@ -237,7 +237,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="closeTeamCfg()" style="background:#c5bde8;border:1px solid #b5aee0;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:13px;color:#5a5088">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:1rem 1.2rem">
-
+ 
     <!-- ANALISTAS -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5a5088;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
@@ -251,20 +251,20 @@ table{border-collapse:collapse;min-width:max-content}
         <button onclick="teamAddAnalyst()" style="font-size:12px;padding:6px 12px;border:none;border-radius:7px;background:#7060b0;color:#fff;cursor:pointer;font-weight:600">+ Adicionar</button>
       </div>
     </div>
-
+ 
     <!-- GESTORES -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2060a0;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
-        Gestores de bloco ⬥ <span style="font-size:10px;font-weight:400;opacity:.6">(clique no analista para marcar/desmarcar)</span>
+        Focais de bloco ⬥ <span style="font-size:10px;font-weight:400;opacity:.6">(clique no analista para marcar/desmarcar)</span>
       </div>
       <div id="teamManagerList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
-
+ 
     <!-- DISTRIBUIÇÃO DOS BLOCOS -->
     <div style="background:#ede9f8;border:1px solid #c5bde8;border-radius:8px;padding:.75rem;font-size:11px;color:#5a5088;line-height:2">
       <div style="font-size:11px;font-weight:600;color:#2a2250;margin-bottom:.4rem">Distribuição por bloco</div>
       <div id="teamBlockPreview"></div>
-      <div style="font-size:10px;color:#8880b8;margin-top:.4rem">A ordem dos gestores define quem vai para cada bloco.</div>
+      <div style="font-size:10px;color:#8880b8;margin-top:.4rem">A ordem dos focales define quem vai para cada bloco.</div>
     </div>
   </div>
   <div style="padding:.85rem 1.2rem;border-top:1px solid #c5bde8;display:flex;gap:8px;background:#f0edf9;flex-shrink:0">
@@ -272,7 +272,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="teamApply()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#7060b0,#6050a8);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(96,85,160,.4)">✓ Aplicar</button>
   </div>
 </div>
-
+ 
 <style>
 .team-analyst-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #c5bde8;border-radius:7px;background:#ede9f8;font-size:12px;color:#2a2250}
 .team-analyst-item:hover{background:#ddd8f8}
@@ -283,7 +283,7 @@ table{border-collapse:collapse;min-width:max-content}
 .team-mgr-chip.is-mgr{background:#ddeeff;color:#2060a0;border-color:#2a5080;font-weight:600}
 .team-mgr-chip.is-mgr::before{content:'⬥ '}
 </style>
-
+ 
 <div class="ctx-menu" id="ctxMenu">
   <div class="ctx-title" id="ctxTitle">Alterar</div>
   <div class="ctx-item" onclick="applyOverride('Neg 1')"><span class="ci-dot" style="background:#6a3fa0"></span>Neg 1</div>
@@ -299,22 +299,22 @@ table{border-collapse:collapse;min-width:max-content}
 </div>
 <div class="tooltip" id="tooltip"></div>
 <div class="toast" id="toast"></div>
-
+ 
 <script>
 const ANALYSTS=["Aline M.","Adriana R.","Almir G.","Camila N.","Camilla T.","Elaine C.","Maraisa F.","Paolla S.","Sophia M.","José N.","Rubya D.","Gabriel S.","Marília","Fabiane","Rianne"];
 const MANAGERS=["Camila N.","Camilla T.","José N.","Sophia M."];
 const NON_MANAGERS=ANALYSTS.filter(a=>!MANAGERS.includes(a)); // 11 analistas
 const BLOCKS=["Neg 2","Neg 1","Proc 1"];
 // Distribuição: Neg2=4(1mgr+3nm), Neg1=6(2mgr+4nm), Proc1=5(1mgr+4nm) → total 15, nenhuma reserva
-// Gestores(4): mgr[0]→Neg2, mgr[1]+mgr[2]→Neg1, mgr[3]→Proc1
+// Focais(4): mgr[0]→Neg2, mgr[1]+mgr[2]→Neg1, mgr[3]→Proc1
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
-
+ 
 const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WD_SHORT=['D','S','T','Q','Q','S','S'];
 const WD_FULL=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const CYCLE_START=new Date(2026,6,6); // 06/07/2026
 const CYCLE_DAYS=15;
-
+ 
 function getWorkdayIndex(date){
   if(date<CYCLE_START) return -1;
   let count=0;
@@ -349,15 +349,15 @@ function getCycleDates(cycleNum){
   }
   return{start,end};
 }
-
+ 
 function getCycleAssignment(cycleNum){
-  // Gestores: circular shift por ciclo
+  // Focais: circular shift por ciclo
   const ms=cycleNum%MANAGERS.length;
   const mgr=[...MANAGERS.slice(ms),...MANAGERS.slice(0,ms)];
-  // Analistas não-gestores: circular shift por ciclo (passo 3)
+  // Analistas não-focales: circular shift por ciclo (passo 3)
   const ns=(cycleNum*3)%NON_MANAGERS.length;
   const nm=[...NON_MANAGERS.slice(ns),...NON_MANAGERS.slice(0,ns)];
-
+ 
   return {
     // Neg 2: 4 = 1 mgr + 3 nm
     "Neg 2":[
@@ -386,16 +386,16 @@ function getCycleAssignment(cycleNum){
   };
   // Total: 4+6+5 = 15 ✓ — ninguém fica de fora
 }
-
+ 
 function toKey(d){return d.toISOString().slice(0,10);}
 function isWeekend(d){return d.getDay()===0||d.getDay()===6;}
 function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 function fmtFull(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function parseDateInput(s){if(!s)return null;const[y,m,d]=s.split('-');return new Date(+y,+m-1,+d);}
-
+ 
 const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marília","fabiane.sihel":"Fabiane","rianne.sousa":"Rianne"};
 function resolveAnalyst(raw){if(!raw)return null;const k=raw.trim().toLowerCase();if(NAME_VARIANTS[k])return NAME_VARIANTS[k];return ANALYSTS.find(a=>a.toLowerCase()===k)||null;}
-
+ 
 const BASE_ABS=[
   ["adriana.rodrigues","Férias","04/05/2026","08/05/2026"],
   ["camila.nascimento","Day off","08/05/2026","08/05/2026"],
@@ -416,18 +416,18 @@ function hasAbsInMonth(name,y,m){
   return allAbs().some(a=>a.name===name&&toKey(a.start)<=e&&toKey(a.end)>=s);
 }
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
-
+ 
 // STATE
 let curY=2026,curM=4,curView='mes',curWk=0;
 let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVal='',highlighted=new Set();
 let editMode=false;
 const overrides={};
 let ctxName=null,ctxDate=null,ctxCurrent=null;
-
+ 
 let sbOpen=true;
 function toggleSb(){sbOpen=!sbOpen;document.getElementById('sidebar').classList.toggle('collapsed',!sbOpen);document.getElementById('collapseBtn').innerHTML=sbOpen?'&#8249;':'&#8250;';}
 function expandSb(){sbOpen=true;document.getElementById('sidebar').classList.remove('collapsed');document.getElementById('collapseBtn').innerHTML='&#8249;';}
-
+ 
 function initAbsForm(){
   const sel=document.getElementById('absAnalyst');
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
@@ -456,7 +456,7 @@ function renderAbsList(){
     return `<div class="abs-item"><span class="abs-item-type" style="background:${bg[a.type]||'#888'}">${a.type==='Day off'?'DO':a.type==='Férias'?'Fér':'Lic'}</span><span class="abs-item-name">${a.name} · ${r}</span><button class="abs-del" onclick="removeManualAbs(${a.id})">✕</button></div>`;
   }).join('');
 }
-
+ 
 async function syncSheet(){
   const url=document.getElementById('syncUrl').value.trim();
   const btn=document.getElementById('syncBtn');
@@ -485,14 +485,14 @@ async function syncSheet(){
     setTimeout(()=>{btn.textContent='🔄 Sincronizar agora';btn.classList.remove('error');},4000);
   }
 }
-
+ 
 function setFilter(f,btn){filterMode=f;document.querySelectorAll('.sb-pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');highlighted.clear();renderSbAnalysts();render();}
 function toggleBlock(b,btn){if(blockFilters.has(b)){if(blockFilters.size>1)blockFilters.delete(b);}else blockFilters.add(b);btn.classList.toggle('active',blockFilters.has(b));render();}
 function searchAnalyst(v){searchVal=v.toLowerCase();renderSbAnalysts();render();}
 function toggleHighlight(name){if(highlighted.has(name))highlighted.delete(name);else highlighted.add(name);renderSbAnalysts();render();}
 function getFilteredAnalysts(){
   let list=ANALYSTS;
-  if(filterMode==='gestores')list=MANAGERS;
+  if(filterMode==='focales')list=MANAGERS;
   else if(filterMode==='ausentes')list=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM));
   else if(filterMode==='disponiveis')list=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM));
   if(highlighted.size>0)list=list.filter(a=>highlighted.has(a));
@@ -501,15 +501,15 @@ function getFilteredAnalysts(){
 }
 function renderSbAnalysts(){
   let list=ANALYSTS;
-  if(filterMode==='gestores')list=MANAGERS;
+  if(filterMode==='focales')list=MANAGERS;
   else if(filterMode==='ausentes')list=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM));
   else if(filterMode==='disponiveis')list=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM));
   if(searchVal)list=list.filter(a=>a.toLowerCase().includes(searchVal));
   document.getElementById('cnt-todos').textContent=ANALYSTS.length;
-  document.getElementById('cnt-gestores').textContent=MANAGERS.length;
+  document.getElementById('cnt-focales').textContent=MANAGERS.length;
   document.getElementById('cnt-ausentes').textContent=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM)).length;
   document.getElementById('cnt-disponiveis').textContent=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM)).length;
-
+ 
   // bloco do analista no mês atual
   const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
   const cn=getCycleNumber(refD);
@@ -517,7 +517,7 @@ function renderSbAnalysts(){
   const blockOf={};
   BLOCKS.forEach(b=>asgn[b].forEach(p=>{blockOf[p.name]=b;}));
   const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
-
+ 
   document.getElementById('sbAnalysts').innerHTML=list.map(name=>{
     const isMgr=MANAGERS.includes(name),hasAbs=hasAbsInMonth(name,curY,curM),sel=highlighted.has(name);
     const blk=blockOf[name];
@@ -528,7 +528,7 @@ function renderSbAnalysts(){
     </div>`;
   }).join('');
 }
-
+ 
 function toggleEditMode(){editMode=!editMode;document.getElementById('editToggle').classList.toggle('on',editMode);document.getElementById('editToggle').textContent=editMode?'✎ Editando...':'✎ Editar';document.getElementById('editBadge').style.display=editMode?'inline-flex':'none';render();if(editMode)showToast('Modo edição ativo — clique em qualquer célula');}
 function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=`${name} · ${fmt(dateObj)}`;menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
 function closeCtx(){document.getElementById('ctxMenu').style.display='none';}
@@ -543,7 +543,7 @@ function renderEditList(){
   el.innerHTML=keys.map(k=>{const[name,dk]=k.split('|');const val=overrides[k];return `<div class="edit-item"><span class="edit-badge-sb" style="background:${bgMap[val]||'#888'}">${val}</span><span style="flex:1;font-size:10px">${name}<br><span style="opacity:.6">${dk.slice(5).replace('-','/')}</span></span><button class="edit-del" onclick="removeOverrideKey('${k}')">✕</button></div>`;}).join('');
 }
 document.addEventListener('click',e=>{if(!document.getElementById('ctxMenu').contains(e.target))closeCtx();});
-
+ 
 function setView(v){
   curView=v;
   ['btnMes','btnSem','btnCiclo'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['mes','semana','ciclo'][i]===v));
@@ -576,7 +576,7 @@ function getDays(){
   if(curView==='ciclo'){const{start,end}=getCycleDates(curWk);if(!start||!end)return[];const days=[];const d=new Date(start);while(toKey(d)<=toKey(end)){days.push(new Date(d));d.setDate(d.getDate()+1);}return days;}
   return[];
 }
-
+ 
 function showTip(e,name,date,block,cycleNum){
   const tip=document.getElementById('tooltip');
   const abs=getAbsInfo(name,date);
@@ -595,7 +595,7 @@ function showTip(e,name,date,block,cycleNum){
 }
 function hideTip(){document.getElementById('tooltip').style.display='none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
-
+ 
 function updateCicloInfo(date){
   const beforeStart=date<CYCLE_START;
   if(beforeStart){
@@ -613,7 +613,7 @@ function updateCicloInfo(date){
     <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
   document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
-
+ 
 function render(){
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
@@ -623,7 +623,7 @@ function render(){
   const refDate=days.find(d=>!isWeekend(d))||new Date(curY,curM,18);
   updateCicloInfo(refDate);
   if(!analysts.length){tbl.innerHTML=`<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>`;return;}
-
+ 
   const sub=curView==='semana'?` · Sem ${curWk+1}`:curView==='ciclo'?` · Ciclo ${curWk+1}`:'';
   let h=`<thead><tr><td class="hdr-analistas">Analistas (${analysts.length})</td><td class="hdr-blocos" colspan="${days.length}">Blocos de tratativa — ${MONTHS_PT[curM]} ${curY}${sub}${editMode?' ✎':''}</td></tr>`;
   h+=`<tr><td class="hdr-analistas" style="font-size:10px;opacity:.7">Nome · ciclo atual</td>`;
@@ -635,7 +635,7 @@ function render(){
     </td>`;
   });
   h+=`</tr></thead><tbody>`;
-
+ 
   analysts.forEach(name=>{
     const isMgr=MANAGERS.includes(name);
     // bloco de referência para label
@@ -650,13 +650,13 @@ function render(){
     const rbColor=blkColor[refBlock]||'#555';
     const tagBg=beforeStart?'#555':rbColor;
     const tagLabel=beforeStart?'—':refBlock;
-
+ 
     h+=`<tr>
       <td class="nome-cell${isMgr?' mgr':''}" onclick="toggleHighlight('${name}')">
         ${name}${isMgr?' ⬥':''}
         <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${tagLabel}</span>
       </td>`;
-
+ 
     days.forEach(d=>{
       const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
       if(wk){h+=`<td class="day-cell wknd${cs?' ciclo-start':''}"></td>`;return;}
@@ -669,7 +669,7 @@ function render(){
       const asgn=getCycleAssignment(cn);
       let block=null;
       if(!beforeStart){for(const b of BLOCKS){if(asgn[b].find(p=>p.name===name)){block=b;break;}}}
-
+ 
       let current=null,cell='';
       if(hasOv){
         current=overrides[ovKey];
@@ -688,7 +688,7 @@ function render(){
         const bc=block==='Neg 1'?'neg1':block==='Neg 2'?'neg2':'proc1';
         cell=`<span class="pill p-${bc}">${block}</span>`;
       }
-
+ 
       const ne=name.replace(/'/g,"\\'");
       h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode&&!beforeStart?' editable':''}"
         onclick="${editMode&&!beforeStart?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
@@ -697,7 +697,7 @@ function render(){
     });
     h+=`</tr>`;
   });
-
+ 
   h+=`<tr><td colspan="${days.length+1}" style="height:5px;background:#ede9f8"></td></tr>`;
   h+=`<tr class="ctrl-row"><td class="ctrl-nome">Disponíveis</td>`;
   days.forEach(d=>{
@@ -709,7 +709,7 @@ function render(){
     const col=aus>=4?'#ff6b6b':aus>=2?'#ffb347':'#7adb78';
     h+=`<td style="color:${col}" class="${cs?'ciclo-start':''}">${av}<span style="font-size:8px;opacity:.6;display:block">-${aus}</span></td>`;
   });
-  h+=`</tr><tr class="ctrl-row"><td class="ctrl-nome">Gestores ok</td>`;
+  h+=`</tr><tr class="ctrl-row"><td class="ctrl-nome">Focais ok</td>`;
   days.forEach(d=>{
     if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
     const cs=isCycleStart(d);
@@ -721,15 +721,15 @@ function render(){
   h+=`</tr></tbody>`;
   tbl.innerHTML=h;
 }
-
+ 
 initAbsForm();renderSbAnalysts();render();
-
+ 
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
 const TEAM_DEFAULT_MANAGERS = [...MANAGERS];
 let teamAnalysts = [...ANALYSTS];
 let teamManagers = [...MANAGERS];
-
+ 
 function openTeamCfg(){
   teamAnalysts = [...ANALYSTS];
   teamManagers = [...MANAGERS];
@@ -741,14 +741,14 @@ function closeTeamCfg(){
   document.getElementById('teamOverlay').style.display = 'none';
   document.getElementById('teamDrawer').style.right = '-440px';
 }
-
+ 
 function teamRenderAll(){
   teamRenderAnalysts();
   teamRenderManagers();
   teamRenderPreview();
   document.getElementById('teamAnalystCount').textContent = '(' + teamAnalysts.length + ')';
 }
-
+ 
 function teamRenderAnalysts(){
   const el = document.getElementById('teamAnalystList');
   el.innerHTML = teamAnalysts.map((name,i) => {
@@ -761,28 +761,80 @@ function teamRenderAnalysts(){
     '</div>';
   }).join('');
 }
-
+ 
 function teamRenderManagers(){
   const el = document.getElementById('teamManagerList');
-  el.innerHTML = teamAnalysts.map(name => {
-    const isMgr = teamManagers.includes(name);
-    return '<button class="team-mgr-chip' + (isMgr?' is-mgr':'') + '" onclick="teamToggleMgr(\'' + name.replace(/'/g,"\\'") + '\')">' +
-      name + '</button>';
-  }).join('');
+  const slotLabels = ['Neg 2','Neg 1 (1\u00ba)','Neg 1 (2\u00ba)','Proc 1'];
+  const slotColors = ['#1a6a6a','#6a3fa0','#6a3fa0','#1a4a8a'];
+ 
+  // Slots de focales
+  let html = '<div style="margin-bottom:.8rem">';
+  html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.5rem">Slots de focal por bloco — clique no analista abaixo para atribuir:</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:5px">';
+  for(let i=0;i<4;i++){
+    const mgr = teamManagers[i] || null;
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid ' + slotColors[i] + '55;border-radius:8px;background:' + slotColors[i] + '11">';
+    html += '<span style="font-size:11px;font-weight:700;color:' + slotColors[i] + ';min-width:78px">' + slotLabels[i] + '</span>';
+    html += '<span style="flex:1;font-size:12px;color:#2a2250;font-weight:' + (mgr?'600':'400') + '">' + (mgr || '<em style="opacity:.4">clique para definir</em>') + '</span>';
+    if(mgr) html += '<button onclick="teamRemoveSlot(' + i + ')" style="background:none;border:none;cursor:pointer;font-size:12px;color:#9088b8" title="Remover">\u2715</button>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+ 
+  // Lista de todos os analistas
+  html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.4rem">Todos os analistas \u2014 clique para colocar no pr\u00f3ximo slot vazio:</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
+  teamAnalysts.forEach(function(name) {
+    const slotIdx = teamManagers.indexOf(name);
+    const isMgr = slotIdx >= 0;
+    const color = isMgr ? slotColors[slotIdx] : '#7060b0';
+    const extra = isMgr ? 'background:' + color + '22;border-color:' + color + ';color:' + color + ';font-weight:600;' : '';
+    html += '<button class="team-mgr-chip" onclick="teamSelectForSlot(\'' + name.replace(/'/g, "\\'") + '\')" style="' + extra + '">';
+    html += (isMgr ? '\u25c6 ' : '') + name + '</button>';
+  });
+  html += '</div>';
+ 
+  el.innerHTML = html;
 }
-
+ 
+let teamPendingName = null;
+ 
+function teamSelectForSlot(name){
+  const idx = teamManagers.indexOf(name);
+  if(idx >= 0){
+    teamManagers.splice(idx, 1);
+    teamRenderAll();
+    showToast(name + ' removido do slot');
+    return;
+  }
+  const emptySlot = [0,1,2,3].find(function(i){ return !teamManagers[i]; });
+  if(emptySlot !== undefined){
+    while(teamManagers.length <= emptySlot) teamManagers.push(null);
+    teamManagers[emptySlot] = name;
+    teamManagers = teamManagers.filter(function(m){ return m !== null; });
+    teamRenderAll();
+    showToast(name + ' \u2192 ' + ['Neg 2','Neg 1 (1\u00ba)','Neg 1 (2\u00ba)','Proc 1'][emptySlot]);
+  } else {
+    showToast('Todos os slots ocupados \u2014 clique em \u2715 para liberar um');
+  }
+}
+ 
+function teamRemoveSlot(slotIdx){
+  teamManagers.splice(slotIdx, 1);
+  teamRenderAll();
+}
+ 
 function teamRenderPreview(){
   const el = document.getElementById('teamBlockPreview');
   const mgrs = teamManagers;
-  const nms = teamAnalysts.filter(a => !teamManagers.includes(a));
+  const nms = teamAnalysts.filter(function(a){ return !teamManagers.includes(a); });
   const lines = [
-    '<span style="color:#1a6a6a;font-weight:600">Neg 2 (4):</span> ' + (mgrs[0]||'—') + ' + ' + (nms.slice(0,3).join(', ')||'—'),
-    '<span style="color:#6a3fa0;font-weight:600">Neg 1 (6):</span> ' + [mgrs[1],mgrs[2]].filter(Boolean).join(', ') + ' + ' + (nms.slice(3,7).join(', ')||'—'),
-    '<span style="color:#1a4a8a;font-weight:600">Proc 1 (5):</span> ' + (mgrs[3]||'—') + ' + ' + (nms.slice(7,11).join(', ')||'—'),
+    '<span style="color:#1a6a6a;font-weight:600">Neg 2 (4):</span> ' + (mgrs[0]||'<em style="opacity:.4">sem focal</em>') + ' + ' + (nms.slice(0,3).join(', ')||'\u2014'),
+    '<span style="color:#6a3fa0;font-weight:600">Neg 1 (6):</span> ' + [mgrs[1],mgrs[2]].filter(Boolean).join(', ') + ' + ' + (nms.slice(3,7).join(', ')||'\u2014'),
+    '<span style="color:#1a4a8a;font-weight:600">Proc 1 (5):</span> ' + (mgrs[3]||'<em style="opacity:.4">sem focal</em>') + ' + ' + (nms.slice(7,11).join(', ')||'\u2014'),
   ];
   el.innerHTML = lines.join('<br>');
 }
-
 function teamAddAnalyst(){
   const input = document.getElementById('teamNewName');
   const name = input.value.trim();
@@ -792,27 +844,20 @@ function teamAddAnalyst(){
   input.value = '';
   teamRenderAll();
 }
-
+ 
 function teamRemoveAnalyst(name){
   if(!confirm('Remover ' + name + ' da equipe?')) return;
   teamAnalysts = teamAnalysts.filter(a => a !== name);
   teamManagers = teamManagers.filter(a => a !== name);
   teamRenderAll();
 }
-
-function teamToggleMgr(name){
-  if(teamManagers.includes(name)){
-    teamManagers = teamManagers.filter(a => a !== name);
-  } else {
-    teamManagers.push(name);
-  }
-  teamRenderAll();
-}
-
+ 
+ 
+ 
 function teamApply(){
   if(teamAnalysts.length < 1){ showToast('A equipe não pode ficar vazia'); return; }
-  if(teamManagers.length === 0){ showToast('Defina pelo menos 1 gestor'); return; }
-
+  if(teamManagers.length === 0){ showToast('Defina pelo menos 1 focal'); return; }
+ 
   // Atualiza as variáveis globais
   ANALYSTS.length = 0;
   teamAnalysts.forEach(a => ANALYSTS.push(a));
@@ -820,13 +865,13 @@ function teamApply(){
   teamManagers.forEach(m => MANAGERS.push(m));
   NON_MANAGERS.length = 0;
   ANALYSTS.filter(a => !MANAGERS.includes(a)).forEach(a => NON_MANAGERS.push(a));
-
+ 
   closeTeamCfg();
   renderSbAnalysts();
   render();
   showToast('✓ Equipe atualizada — dimensionamento recalculado!');
 }
-
+ 
 function teamReset(){
   if(!confirm('Restaurar equipe original?')) return;
   teamAnalysts = [...TEAM_DEFAULT_ANALYSTS];
@@ -834,6 +879,11 @@ function teamReset(){
   teamRenderAll();
 }
 </script>
-
+ 
 </body>
 </html>
+
+
+
+
+
