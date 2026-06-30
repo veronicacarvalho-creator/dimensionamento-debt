@@ -193,7 +193,7 @@ table{border-collapse:collapse;min-width:max-content}
     <div class="sb-section">
       <div class="sb-label">Legenda</div>
       <div class="sb-legend">
-        <div class="sb-leg"><span class="leg-sq" style="background:#6a3fa0"></span>Neg 1 — 2 focales + 4 analistas</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#6a3fa0"></span>Neg 1 — 1 focal + 5 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#1a6a6a"></span>Neg 2 — 1 focal + 3 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#1a4a8a"></span>Proc 1 — 1 focal + 4 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#cc8800"></span>Férias / ausência</div>
@@ -305,8 +305,8 @@ const ANALYSTS=["Aline M.","Adriana R.","Almir G.","Camila N.","Camilla T.","Ela
 const MANAGERS=["Camila N.","Camilla T.","José N.","Sophia M."];
 const NON_MANAGERS=ANALYSTS.filter(a=>!MANAGERS.includes(a)); // 11 analistas
 const BLOCKS=["Neg 2","Neg 1","Proc 1"];
-// Distribuição: Neg2=4(1mgr+3nm), Neg1=6(2mgr+4nm), Proc1=5(1mgr+4nm) → total 15, nenhuma reserva
-// Focais(4): mgr[0]→Neg2, mgr[1]+mgr[2]→Neg1, mgr[3]→Proc1
+// Distribuição: Neg2=4(1 focal+3nm), Neg1=6(1 focal+1 rotação+4nm), Proc1=5(1 focal+4nm) → total 15
+// Focais(4): mgr[0]→Neg2, mgr[1]→Neg1(focal), mgr[2]→Proc1, mgr[3]→Neg1(rotação, sem focal)
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
  
 const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -315,39 +315,23 @@ const WD_FULL=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const CYCLE_START=new Date(2026,6,6); // 06/07/2026
 const CYCLE_DAYS=15;
  
-function getWorkdayIndex(date){
-  if(date<CYCLE_START) return -1;
-  let count=0;
-  const d=new Date(CYCLE_START);
-  const target=toKey(date);
-  while(toKey(d)<=target){
-    if(!isWeekend(d)) count++;
-    if(toKey(d)===target) return count-1;
-    d.setDate(d.getDate()+1);
-    if(count>5000) break;
-  }
-  return -1;
+// Ciclos em dias CORRIDOS (não úteis)
+function dayDiff(a,b){
+  return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/86400000);
 }
 function getCycleNumber(date){
-  if(date<CYCLE_START) return 0;
-  const wdi=getWorkdayIndex(date);
-  return wdi<0?0:Math.floor(wdi/CYCLE_DAYS);
+  const diff=dayDiff(CYCLE_START,date);
+  if(diff<0) return -1;
+  return Math.floor(diff/CYCLE_DAYS);
 }
 function isCycleStart(date){
-  if(isWeekend(date)||date<CYCLE_START) return false;
-  const wdi=getWorkdayIndex(date);
-  return wdi>=0&&wdi%CYCLE_DAYS===0;
+  const diff=dayDiff(CYCLE_START,date);
+  return diff>=0&&diff%CYCLE_DAYS===0;
 }
 function getCycleDates(cycleNum){
-  const ts=cycleNum*CYCLE_DAYS, te=(cycleNum+1)*CYCLE_DAYS-1;
-  let wdi=-1,start=null,end=null;
-  const d=new Date(CYCLE_START);
-  while(wdi<te+5){
-    if(!isWeekend(d)){wdi++;if(wdi===ts)start=new Date(d);if(wdi===te){end=new Date(d);break;}}
-    d.setDate(d.getDate()+1);
-    if(wdi>te+500)break;
-  }
-  return{start,end};
+  const cs=new Date(CYCLE_START.getFullYear(),CYCLE_START.getMonth(),CYCLE_START.getDate()+cycleNum*CYCLE_DAYS);
+  const ce=new Date(CYCLE_START.getFullYear(),CYCLE_START.getMonth(),CYCLE_START.getDate()+(cycleNum+1)*CYCLE_DAYS-1);
+  return{start:cs,end:ce};
 }
  
 function getCycleAssignment(cycleNum){
@@ -366,25 +350,25 @@ function getCycleAssignment(cycleNum){
       {name:nm[1],isMgr:false},
       {name:nm[2],isMgr:false},
     ],
-    // Neg 1: 6 = 2 mgr + 4 nm  ← analista extra vai aqui primeiro
+    // Neg 1: 6 = 1 focal + 1 focal em rotação (sem papel focal) + 4 nm
     "Neg 1":[
       {name:mgr[1],isMgr:true},
-      {name:mgr[2],isMgr:true,extraMgr:true},
+      {name:mgr[3],isMgr:false},  // focal em rotação — sem papel focal neste ciclo
       {name:nm[3],isMgr:false},
       {name:nm[4],isMgr:false},
       {name:nm[5],isMgr:false},
       {name:nm[6],isMgr:false},
     ],
-    // Proc 1: 5 = 1 mgr + 4 nm  ← analista extra vai aqui depois
+    // Proc 1: 5 = 1 focal + 4 nm
     "Proc 1":[
-      {name:mgr[3],isMgr:true},
+      {name:mgr[2],isMgr:true},
       {name:nm[7],isMgr:false},
       {name:nm[8],isMgr:false},
       {name:nm[9],isMgr:false},
       {name:nm[10],isMgr:false},
     ],
   };
-  // Total: 4+6+5 = 15 ✓ — ninguém fica de fora
+  // Total: 4+6+5 = 15 ✓ — focais: Neg2→mgr[0], Neg1→mgr[1], Proc1→mgr[2], Rotação→mgr[3] (analista em Neg1)
 }
  
 function toKey(d){return d.toISOString().slice(0,10);}
@@ -418,7 +402,8 @@ function hasAbsInMonth(name,y,m){
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
  
 // STATE
-let curY=2026,curM=4,curView='mes',curWk=0;
+const _now=new Date();
+let curY=_now.getFullYear(),curM=_now.getMonth(),curView='mes',curWk=0;
 let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVal='',highlighted=new Set();
 let editMode=false;
 const overrides={};
@@ -431,9 +416,9 @@ function expandSb(){sbOpen=true;document.getElementById('sidebar').classList.rem
 function initAbsForm(){
   const sel=document.getElementById('absAnalyst');
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
-  const t='2026-05-18';document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;
+  const t=toKey(new Date());document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;
 }
-function clearAbsForm(){document.getElementById('absAnalyst').value='';const t='2026-05-18';document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;}
+function clearAbsForm(){document.getElementById('absAnalyst').value='';const t=toKey(new Date());document.getElementById('absStart').value=t;document.getElementById('absEnd').value=t;}
 function addAbsence(){
   const name=document.getElementById('absAnalyst').value;
   const type=document.getElementById('absType').value;
@@ -445,8 +430,9 @@ function addAbsence(){
   renderAbsList();renderSbAnalysts();render();
   showToast(`✓ ${name} · ${type} · ${fmt(s)}${toKey(s)!==toKey(e)?' – '+fmt(e):''}`);
   clearAbsForm();
+  saveAbsences();
 }
-function removeManualAbs(id){manualAbsences=manualAbsences.filter(a=>a.id!==id);renderAbsList();renderSbAnalysts();render();showToast('Ausência removida — dimensionamento atualizado');}
+function removeManualAbs(id){manualAbsences=manualAbsences.filter(a=>a.id!==id);renderAbsList();renderSbAnalysts();render();showToast('Ausência removida — dimensionamento atualizado');saveAbsences();}
 function renderAbsList(){
   const el=document.getElementById('absList');
   if(!manualAbsences.length){el.innerHTML='';return;}
@@ -532,10 +518,10 @@ function renderSbAnalysts(){
 function toggleEditMode(){editMode=!editMode;document.getElementById('editToggle').classList.toggle('on',editMode);document.getElementById('editToggle').textContent=editMode?'✎ Editando...':'✎ Editar';document.getElementById('editBadge').style.display=editMode?'inline-flex':'none';render();if(editMode)showToast('Modo edição ativo — clique em qualquer célula');}
 function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=`${name} · ${fmt(dateObj)}`;menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
 function closeCtx(){document.getElementById('ctxMenu').style.display='none';}
-function applyOverride(val){if(!ctxName||!ctxDate)return;overrides[`${ctxName}|${toKey(ctxDate)}`]=val;closeCtx();renderEditList();render();showToast(`✎ ${ctxName} → ${val} em ${fmt(ctxDate)}`);}
-function removeOverride(){delete overrides[`${ctxName}|${toKey(ctxDate)}`];closeCtx();renderEditList();render();showToast('Edição removida');}
-function removeOverrideKey(k){delete overrides[k];renderEditList();render();}
-function clearOverrides(){if(!Object.keys(overrides).length)return;if(!confirm('Remover todas as edições manuais?'))return;Object.keys(overrides).forEach(k=>delete overrides[k]);renderEditList();render();}
+function applyOverride(val){if(!ctxName||!ctxDate)return;overrides[`${ctxName}|${toKey(ctxDate)}`]=val;closeCtx();renderEditList();render();showToast(`✎ ${ctxName} → ${val} em ${fmt(ctxDate)}`);saveOverrides();}
+function removeOverride(){delete overrides[`${ctxName}|${toKey(ctxDate)}`];closeCtx();renderEditList();render();showToast('Edição removida');saveOverrides();}
+function removeOverrideKey(k){delete overrides[k];renderEditList();render();saveOverrides();}
+function clearOverrides(){if(!Object.keys(overrides).length)return;if(!confirm('Remover todas as edições manuais?'))return;Object.keys(overrides).forEach(k=>delete overrides[k]);renderEditList();render();saveOverrides();}
 function renderEditList(){
   const el=document.getElementById('editList');const keys=Object.keys(overrides);
   if(!keys.length){el.innerHTML='<span style="font-size:11px;color:#8880b8">Nenhuma edição.</span>';return;}
@@ -553,7 +539,14 @@ function setView(v){
   else wb.style.display='none';
   render();
 }
-function changeMonth(dir){curM+=dir;if(curM>11){curM=0;curY++;}if(curM<0){curM=11;curY--;}curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();}
+function changeMonth(dir){
+  const now=new Date(),minY=now.getFullYear(),minM=now.getMonth();
+  let newM=curM+dir,newY=curY;
+  if(newM>11){newM=0;newY++;}
+  if(newM<0){newM=11;newY--;}
+  if(newY<minY||(newY===minY&&newM<minM)){showToast('⚠ Não é possível navegar para meses anteriores');return;}
+  curM=newM;curY=newY;curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();
+}
 function changeWeek(i){curWk=i;buildWeekBtns();render();}
 function buildWeekBtns(){
   const wks=getWeeks(curY,curM);
@@ -615,6 +608,11 @@ function updateCicloInfo(date){
 }
  
 function render(){
+  // Desabilita botão de mês anterior se estiver no mês atual
+  const now=new Date();
+  const backBtn=document.querySelector('.nav-btn');
+  const atMin=curY===now.getFullYear()&&curM===now.getMonth();
+  if(backBtn){backBtn.disabled=atMin;backBtn.style.opacity=atMin?'.3':'1';backBtn.style.cursor=atMin?'default':'pointer';}
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
   const analysts=getFilteredAnalysts();
@@ -722,7 +720,34 @@ function render(){
   tbl.innerHTML=h;
 }
  
+// ── STORAGE COMPARTILHADO ───────────────────────────────────
+async function saveOverrides(){
+  try{if(window.storage)await window.storage.set('dim2026:overrides',JSON.stringify(overrides),true);}catch(e){}
+}
+async function saveAbsences(){
+  try{if(window.storage)await window.storage.set('dim2026:absences',JSON.stringify(manualAbsences),true);}catch(e){}
+}
+async function loadShared(){
+  if(!window.storage){render();return;}
+  try{
+    const ov=await window.storage.get('dim2026:overrides',true);
+    if(ov&&ov.value){const d=JSON.parse(ov.value);Object.keys(d).forEach(k=>overrides[k]=d[k]);}
+  }catch(e){}
+  try{
+    const ab=await window.storage.get('dim2026:absences',true);
+    if(ab&&ab.value){
+      JSON.parse(ab.value).forEach(a=>{
+        a.start=new Date(a.start);a.end=new Date(a.end);
+        if(!manualAbsences.some(x=>x.id===a.id))manualAbsences.push(a);
+      });
+    }
+  }catch(e){}
+  renderAbsList();renderSbAnalysts();renderEditList();render();
+  showToast('✓ Dados sincronizados com todos os usuários');
+}
+ 
 initAbsForm();renderSbAnalysts();render();
+loadShared();
  
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
@@ -764,8 +789,8 @@ function teamRenderAnalysts(){
  
 function teamRenderManagers(){
   const el = document.getElementById('teamManagerList');
-  const slotLabels = ['Neg 2','Neg 1 (1\u00ba)','Neg 1 (2\u00ba)','Proc 1'];
-  const slotColors = ['#1a6a6a','#6a3fa0','#6a3fa0','#1a4a8a'];
+  const slotLabels = ['Neg 2','Neg 1','Proc 1','Rotação'];
+  const slotColors = ['#1a6a6a','#6a3fa0','#1a4a8a','#888888'];
  
   // Slots de focales
   let html = '<div style="margin-bottom:.8rem">';
@@ -813,7 +838,7 @@ function teamSelectForSlot(name){
     teamManagers[emptySlot] = name;
     teamManagers = teamManagers.filter(function(m){ return m !== null; });
     teamRenderAll();
-    showToast(name + ' \u2192 ' + ['Neg 2','Neg 1 (1\u00ba)','Neg 1 (2\u00ba)','Proc 1'][emptySlot]);
+    showToast(name + ' \u2192 ' + ['Neg 2','Neg 1','Proc 1','Rotação'][emptySlot]);
   } else {
     showToast('Todos os slots ocupados \u2014 clique em \u2715 para liberar um');
   }
@@ -830,8 +855,8 @@ function teamRenderPreview(){
   const nms = teamAnalysts.filter(function(a){ return !teamManagers.includes(a); });
   const lines = [
     '<span style="color:#1a6a6a;font-weight:600">Neg 2 (4):</span> ' + (mgrs[0]||'<em style="opacity:.4">sem focal</em>') + ' + ' + (nms.slice(0,3).join(', ')||'\u2014'),
-    '<span style="color:#6a3fa0;font-weight:600">Neg 1 (6):</span> ' + [mgrs[1],mgrs[2]].filter(Boolean).join(', ') + ' + ' + (nms.slice(3,7).join(', ')||'\u2014'),
-    '<span style="color:#1a4a8a;font-weight:600">Proc 1 (5):</span> ' + (mgrs[3]||'<em style="opacity:.4">sem focal</em>') + ' + ' + (nms.slice(7,11).join(', ')||'\u2014'),
+    '<span style="color:#6a3fa0;font-weight:600">Neg 1 (6):</span> ' + (mgrs[1]||'<em style="opacity:.4">sem focal</em>') + ' + ' + ([mgrs[3],...nms.slice(3,7)].filter(Boolean).join(', ')||'\u2014') + (mgrs[3]?'<span style="font-size:9px;opacity:.6"> (rotação)</span>':''),
+    '<span style="color:#1a4a8a;font-weight:600">Proc 1 (5):</span> ' + (mgrs[2]||'<em style="opacity:.4">sem focal</em>') + ' + ' + (nms.slice(7,11).join(', ')||'\u2014'),
   ];
   el.innerHTML = lines.join('<br>');
 }
@@ -882,8 +907,3 @@ function teamReset(){
  
 </body>
 </html>
-
-
-
-
-
