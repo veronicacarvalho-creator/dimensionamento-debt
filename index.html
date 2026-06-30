@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -158,6 +158,11 @@ table{border-collapse:collapse;min-width:max-content}
 .fer-foot-fixed:nth-child(1){left:0}
 .fer-foot{background:#f0edf9;border:.5px solid #e0dcf8;font-size:10px;text-align:center;padding:2px;min-width:28px}
 .fer-today-col{background:#FAEEDA44!important}
+.fer-pending-item{background:#fff;border:1px solid #f59e0b66;border-radius:8px;padding:.4rem .7rem;display:flex;align-items:center;gap:8px;font-size:12px;color:#2a2250}
+.fer-approve-btn{font-size:11px;padding:4px 12px;border:none;border-radius:6px;background:#27500A;color:#fff;cursor:pointer;font-weight:700}
+.fer-approve-btn:hover{background:#1a3506}
+.fer-reject-btn{font-size:11px;padding:4px 12px;border:none;border-radius:6px;background:#A32D2D;color:#fff;cursor:pointer;font-weight:700}
+.fer-reject-btn:hover{background:#7a1f1f}
 </style>
  
  
@@ -239,7 +244,7 @@ table{border-collapse:collapse;min-width:max-content}
     <div class="topbar">
       <div class="main-tabs">
         <button class="main-tab main-tab-active" id="tabDim" onclick="switchMain('dim')">📅 Dimensionamento</button>
-        <button class="main-tab" id="tabFerias" onclick="switchMain('ferias')">🏖️ Controle de Férias</button>
+        <button class="main-tab" id="tabFerias" onclick="switchMain('ferias')">🏖️ Controle de Férias <span id="pendingBadge" style="display:none;background:#f59e0b;color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:3px;font-weight:700">0</span></button>
       </div>
       <h1 id="topbarTitle" style="font-size:13px">Debt Resolutions</h1>
       <span class="ciclo-badge" id="cicloBadgeTop"></span>
@@ -276,8 +281,17 @@ table{border-collapse:collapse;min-width:max-content}
         <span class="fer-leg" style="background:#cc880044;border-color:#cc8800">1 pessoa</span>
         <span class="fer-leg" style="background:#f59e0b44;border-color:#f59e0b">2 pessoas (limite)</span>
         <span class="fer-leg" style="background:#ff6b6b44;border-color:#ff6b6b">3+ (aprovação necessária)</span>
+        <span class="fer-leg" style="background:repeating-linear-gradient(45deg,#fef3c7,#fef3c7 4px,#fff 4px,#fff 8px);border-color:#f59e0b">⏳ Pendente</span>
         <span class="fer-leg" style="background:#FCEBEB;border-color:#A32D2D;color:#A32D2D">Prazo vencido</span>
         <span class="fer-leg" style="background:#FFF3CD;border-color:#854F0B;color:#854F0B">&lt;60 dias</span>
+      </div>
+      <!-- PAINEL DE APROVAÇÕES PENDENTES -->
+      <div id="ferPendingPanel" style="display:none;margin:.4rem .85rem .1rem;background:#FFFBEB;border:1.5px solid #f59e0b;border-radius:10px;overflow:hidden">
+        <div style="padding:.5rem .85rem;background:#FEF3C7;border-bottom:1px solid #f59e0b44;display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:#854F0B">⏳ Aprovações pendentes — Gestoras: Thais M. e Veronica C.</span>
+          <span style="font-size:10px;color:#854F0B;opacity:.7;margin-left:auto">Revise e aprove ou rejeite abaixo</span>
+        </div>
+        <div id="ferPendingList" style="padding:.5rem .85rem;display:flex;flex-direction:column;gap:.4rem"></div>
       </div>
       <div class="fer-outer"><table id="feriasTable" class="fer-table"></table></div>
     </div>
@@ -702,12 +716,13 @@ function setView(v){
   render();
 }
 function changeMonth(dir){
-  const now=new Date(),minY=now.getFullYear(),minM=now.getMonth();
   let newM=curM+dir,newY=curY;
   if(newM>11){newM=0;newY++;}
   if(newM<0){newM=11;newY--;}
-  if(newY<minY||(newY===minY&&newM<minM)){showToast('⚠ Não é possível navegar para meses anteriores');return;}
-  curM=newM;curY=newY;curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();
+  curM=newM;curY=newY;curWk=0;
+  renderSbAnalysts();
+  if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();
+  render();
 }
 function changeWeek(i){curWk=i;buildWeekBtns();render();}
 function buildWeekBtns(){
@@ -780,11 +795,6 @@ function updateCicloInfo(date){
 }
  
 function render(){
-  // Desabilita botão de mês anterior se estiver no mês atual
-  const now=new Date();
-  const backBtn=document.querySelector('.nav-btn');
-  const atMin=curY===now.getFullYear()&&curM===now.getMonth();
-  if(backBtn){backBtn.disabled=atMin;backBtn.style.opacity=atMin?'.3':'1';backBtn.style.cursor=atMin?'default':'pointer';}
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
   const analysts=getFilteredAnalysts();
@@ -918,7 +928,9 @@ async function loadShared(){
     }
   }catch(e){}
   await loadVacLimits();
+  await loadPending();
   renderAbsList();renderSbAnalysts();renderEditList();render();
+  updatePendingBadge();
   showToast('✓ Dados sincronizados com todos os usuários');
 }
  
@@ -1207,6 +1219,7 @@ function renderFeriasTable(){
     FERIAS_WEEKS.forEach(wk=>{
       const isTW=today>=wk.start&&today<=wk.end;
       const vac=getVacWk(name,wk.start,wk.end);
+      const pend=pendingRequests.find(p=>p.name===name&&p.start<=wk.end&&p.end>=wk.start);
       let cStyle=isTW?'background:#FAEEDA44;':'';
       let cContent='',cClick='';
       if(vac){
@@ -1218,6 +1231,10 @@ function renderFeriasTable(){
         const isE=toKey(wk.end)>=toKey(vac.end);
         cContent=`<span style="display:block;height:9px;background:${bg};border-radius:${isS?'4px':'0'} ${isE?'4px':'0'} ${isE?'4px':'0'} ${isS?'4px':'0'};margin:2px 1px"></span>`;
         cClick=`onclick="removeFerById(${vac.id})"`;
+      }else if(pend){
+        cStyle+=`background:repeating-linear-gradient(45deg,#fef3c7,#fef3c7 4px,#fffdf5 4px,#fffdf5 8px);outline:1px dashed #f59e0b;outline-offset:-2px;`;
+        cContent=`<span style="font-size:11px">⏳</span>`;
+        cClick=`onclick="switchMain('ferias')"`;
       }else{
         cClick=`onclick="openFerModalWeek('${ne}','${toKey(wk.start)}','${toKey(wk.end)}')"`;
       }
@@ -1231,8 +1248,10 @@ function renderFeriasTable(){
   FERIAS_WEEKS.forEach(wk=>{
     const isTW=today>=wk.start&&today<=wk.end;
     const cnt=countVacWk(wk.start,wk.end);
+    const pendCnt=pendingRequests.filter(p=>p.start<=wk.end&&p.end>=wk.start).length;
     const col=cnt>=3?'#ff6b6b':cnt>=2?'#f59e0b':cnt===1?'#27ae60':'';
-    h+=`<td class="fer-foot${isTW?' fer-today-col':''}" style="${col?`background:${col}22;color:${col};font-weight:700`:''}">${cnt||''}</td>`;
+    const pendStr=pendCnt?`<span style="color:#f59e0b;font-size:8px;display:block">+${pendCnt}⏳</span>`:'';
+    h+=`<td class="fer-foot${isTW?' fer-today-col':''}" style="${col?`background:${col}22;color:${col};font-weight:700`:''}">${cnt||''}${pendStr}</td>`;
   });
   h+='</tr></tbody>';
   tbl.innerHTML=h;
@@ -1328,6 +1347,8 @@ function validateFerModal(){
   }
   el.innerHTML=h;
   btn.disabled=!durOk;
+  btn.textContent=(durOk&&warn3)?'⏳ Enviar para aprovação':'✓ Salvar Férias';
+  btn.style.background=(durOk&&warn3)?'linear-gradient(135deg,#f59e0b,#d97706)':'linear-gradient(135deg,#cc8800,#b07000)';
 }
  
 function saveFerModal(){
@@ -1336,12 +1357,160 @@ function saveFerModal(){
   const eVal=document.getElementById('ferEnd').value;
   if(!name||!sVal||!eVal)return;
   const s=new Date(sVal+'T00:00:00'),e=new Date(eVal+'T00:00:00');
-  manualAbsences.push({id:Date.now(),name,type:'Férias',start:s,end:e,source:'manual'});
+ 
+  // Se 3+ simultâneos → vai para aprovação
+  const simul=maxSimul(s,e);
+  if(simul+1>=3){
+    const simNames=ANALYSTS.filter(a=>a!==name&&isOnVacWk(a,s,e)).join(', ');
+    pendingRequests.push({
+      id:Date.now(),name,type:'Férias',start:s,end:e,
+      requestedAt:new Date().toISOString(),
+      simultaneousCount:simul+1,
+      simultaneous:simNames
+    });
+    closeFerModal();
+    renderFeriasTable();
+    renderPendingPanel();
+    updatePendingBadge();
+    savePending();
+    showToast(`⏳ Férias de ${name} enviada para aprovação das gestoras`);
+  } else {
+    manualAbsences.push({id:Date.now(),name,type:'Férias',start:s,end:e,source:'manual'});
+    renderAbsList();renderSbAnalysts();render();
+    closeFerModal();
+    renderFeriasTable();
+    saveAbsences();
+    showToast(`✓ Férias de ${name} registrada (${fmt(s)} – ${fmt(e)})`);
+  }
+}
+ 
+// ── APROVAÇÕES PENDENTES ─────────────────────────────────────
+let pendingRequests=[];
+ 
+async function savePending(){
+  try{if(window.storage)await window.storage.set('dim2026:pending',JSON.stringify(pendingRequests),true);}catch(e){}
+}
+async function loadPending(){
+  try{
+    if(window.storage){
+      const r=await window.storage.get('dim2026:pending',true);
+      if(r&&r.value){
+        JSON.parse(r.value).forEach(p=>{
+          p.start=new Date(p.start);p.end=new Date(p.end);
+          if(!pendingRequests.some(x=>x.id===p.id))pendingRequests.push(p);
+        });
+      }
+    }
+  }catch(e){}
+}
+ 
+function updatePendingBadge(){
+  const b=document.getElementById('pendingBadge');
+  const fb=document.getElementById('floatingApprovalBtn');
+  const fc=document.getElementById('floatingCount');
+  const n=pendingRequests.length;
+  if(b){if(n){b.textContent=n;b.style.display='inline';}else b.style.display='none';}
+  if(fb){fb.style.display=n?'block':'none';}
+  if(fc){fc.textContent=n;}
+}
+ 
+function openApprovalModal(){
+  renderApprovalModal();
+  document.getElementById('approvalOverlay').style.display='block';
+  document.getElementById('approvalModal').style.display='flex';
+}
+ 
+function closeApprovalModal(){
+  document.getElementById('approvalOverlay').style.display='none';
+  document.getElementById('approvalModal').style.display='none';
+}
+ 
+function renderApprovalModal(){
+  const el=document.getElementById('approvalModalList');
+  if(!el)return;
+  if(!pendingRequests.length){
+    el.innerHTML='<div style="text-align:center;padding:2rem;font-size:13px;color:#8880b8">✓ Nenhuma aprovação pendente.</div>';
+    return;
+  }
+  el.innerHTML=pendingRequests.map(req=>{
+    const days=countBD(req.start,req.end);
+    const reqDate=req.requestedAt?new Date(req.requestedAt).toLocaleDateString('pt-BR'):'—';
+    return `<div style="background:#fff;border:1.5px solid #f59e0b55;border-radius:10px;padding:.7rem 1rem">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#2a2250;margin-bottom:3px">${req.name}</div>
+          <div style="font-size:12px;color:#5a5088">
+            📅 ${fmt(req.start)} – ${fmt(req.end)} &nbsp;·&nbsp; <strong>${days}</strong> dias úteis
+          </div>
+          <div style="font-size:11px;color:#854F0B;margin-top:4px;background:#FEF3C7;padding:3px 8px;border-radius:5px;display:inline-block">
+            ⚠ ${req.simultaneousCount} pessoas simultâneas: ${req.simultaneous||'—'}
+          </div>
+          <div style="font-size:10px;color:#8880b8;margin-top:4px">Solicitado em ${reqDate}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+          <button class="fer-approve-btn" onclick="approveFromModal(${req.id})">✓ Aprovar</button>
+          <button class="fer-reject-btn" onclick="rejectFromModal(${req.id})">✗ Rejeitar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+ 
+function approveFromModal(id){
+  approvePending(id);
+  renderApprovalModal();
+  if(!pendingRequests.length)closeApprovalModal();
+}
+ 
+function rejectFromModal(id){
+  rejectPending(id);
+  renderApprovalModal();
+  if(!pendingRequests.length)closeApprovalModal();
+}
+ 
+function renderPendingPanel(){
+  const panel=document.getElementById('ferPendingPanel');
+  const list=document.getElementById('ferPendingList');
+  if(!panel||!list)return;
+  if(!pendingRequests.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  list.innerHTML=pendingRequests.map(req=>{
+    const days=countBD(req.start,req.end);
+    const reqDate=req.requestedAt?new Date(req.requestedAt).toLocaleDateString('pt-BR'):'—';
+    return `<div class="fer-pending-item">
+      <div style="flex:1;line-height:1.5">
+        <strong>${req.name}</strong>
+        <span style="margin:0 6px;opacity:.4">·</span>
+        ${fmt(req.start)} – ${fmt(req.end)}
+        <span style="margin:0 4px;font-size:10px;background:#ede9f8;padding:1px 6px;border-radius:4px">${days} dias úteis</span><br>
+        <span style="font-size:10px;color:#854F0B">⚠ ${req.simultaneousCount} pessoas simultâneas: ${req.simultaneous||'—'}</span>
+        <span style="font-size:10px;color:#8880b8;margin-left:8px">Solicitado em ${reqDate}</span>
+      </div>
+      <button class="fer-approve-btn" onclick="approvePending(${req.id})">✓ Aprovar</button>
+      <button class="fer-reject-btn" onclick="rejectPending(${req.id})">✗ Rejeitar</button>
+    </div>`;
+  }).join('');
+}
+ 
+function approvePending(id){
+  const req=pendingRequests.find(r=>r.id===id);
+  if(!req)return;
+  manualAbsences.push({id:Date.now(),name:req.name,type:req.type,start:req.start,end:req.end,source:'manual'});
+  pendingRequests=pendingRequests.filter(r=>r.id!==id);
   renderAbsList();renderSbAnalysts();render();
-  closeFerModal();
-  renderFeriasTable();
-  saveAbsences();
-  showToast(`✓ Férias de ${name} registrada (${fmt(s)} – ${fmt(e)})`);
+  renderFeriasTable();renderPendingPanel();updatePendingBadge();
+  saveAbsences();savePending();
+  showToast(`✓ Férias de ${req.name} aprovadas!`);
+}
+ 
+function rejectPending(id){
+  const req=pendingRequests.find(r=>r.id===id);
+  if(!req)return;
+  const motivo=prompt(`Motivo da rejeição para ${req.name} (opcional):`)||'';
+  pendingRequests=pendingRequests.filter(r=>r.id!==id);
+  renderFeriasTable();renderPendingPanel();updatePendingBadge();
+  savePending();
+  showToast(`✗ Férias de ${req.name} rejeitada${motivo?' — '+motivo:''}`);
 }
  
 function removeFerById(id){
@@ -1365,9 +1534,33 @@ function switchMain(tab){
   document.getElementById('feriasSection').style.display=isDim?'none':'flex';
   document.getElementById('tabDim').classList.toggle('main-tab-active',isDim);
   document.getElementById('tabFerias').classList.toggle('main-tab-active',!isDim);
-  if(!isDim)renderFeriasTable();
+  if(!isDim){renderFeriasTable();renderPendingPanel();updatePendingBadge();}
 }
 </script>
+<!-- BOTÃO FLUTUANTE DE APROVAÇÃO -->
+<div id="floatingApprovalBtn" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:1100">
+  <button onclick="openApprovalModal()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:50px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 24px rgba(245,158,11,.5);display:flex;align-items:center;gap:8px;animation:pulse-badge .8s ease-in-out infinite alternate">
+    ⏳ <span id="floatingCount">0</span> aprovação(ões) pendente(s)
+  </button>
+</div>
+ 
+<!-- MODAL DE APROVAÇÕES -->
+<div id="approvalOverlay" onclick="closeApprovalModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1400;backdrop-filter:blur(3px)"></div>
+<div id="approvalModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(600px,95vw);max-height:80vh;background:#f0edf9;border:1px solid #b5aee0;border-radius:14px;z-index:1401;flex-direction:column;overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,.4)">
+  <div style="padding:.9rem 1.2rem;border-bottom:1px solid #c5bde8;background:#FEF3C7;display:flex;align-items:center;gap:10px">
+    <span style="font-size:15px;font-weight:700;color:#854F0B">⏳ Aprovações de Férias Pendentes</span>
+    <span style="font-size:11px;color:#854F0B;opacity:.7">Gestoras: Thais M. e Veronica C.</span>
+    <button onclick="closeApprovalModal()" style="margin-left:auto;background:#f59e0b22;border:1px solid #f59e0b66;border-radius:7px;padding:3px 10px;cursor:pointer;font-size:12px;color:#854F0B">✕ Fechar</button>
+  </div>
+  <div id="approvalModalList" style="overflow-y:auto;padding:.85rem 1.2rem;display:flex;flex-direction:column;gap:.5rem"></div>
+  <div style="padding:.7rem 1.2rem;border-top:1px solid #c5bde8;background:#f0edf9;font-size:11px;color:#8880b8;text-align:center">
+    Aprovações e rejeições são refletidas imediatamente para todos os usuários.
+  </div>
+</div>
+ 
+<style>
+@keyframes pulse-badge{from{box-shadow:0 4px 24px rgba(245,158,11,.5)}to{box-shadow:0 4px 32px rgba(245,158,11,.85),0 0 0 6px rgba(245,158,11,.15)}}
+</style>
  
 </body>
 </html>
