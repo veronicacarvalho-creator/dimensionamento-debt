@@ -252,6 +252,12 @@ table{border-collapse:collapse;min-width:max-content}
       <h1 id="topbarTitle" style="font-size:13px">Debt Resolutions</h1>
       <span class="ciclo-badge" id="cicloBadgeTop"></span>
       <span class="edit-badge-top" id="editBadge">✎ Modo edição</span>
+      <!-- Status da API -->
+      <span id="apiStatusBadge" onclick="openApiSettings()" title="Configurar API Google Sheets"
+        style="font-size:10px;padding:2px 8px;border-radius:6px;cursor:pointer;border:.5px solid #c5bde8;background:#f5f3fc;color:#8880b8;display:flex;align-items:center;gap:4px">
+        <span id="apiStatusDot" style="width:7px;height:7px;border-radius:50%;background:#b5aee0;display:inline-block"></span>
+        <span id="apiStatusText">Sem API</span>
+      </span>
     </div>
     <div id="dimSection" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
     <div class="navbar">
@@ -333,6 +339,38 @@ table{border-collapse:collapse;min-width:max-content}
     <button id="ferSaveBtn" onclick="saveFerModal()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#cc8800,#b07000);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(180,120,0,.3)">✓ Salvar Férias</button>
   </div>
 </div>
+<!-- MODAL CONFIGURAÇÃO API GOOGLE SHEETS -->
+<div id="apiOverlay" onclick="closeApiSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1500;backdrop-filter:blur(3px)"></div>
+<div id="apiModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(500px,95vw);background:#f0edf9;border:1px solid #b5aee0;border-radius:14px;z-index:1501;flex-direction:column;box-shadow:0 12px 50px rgba(0,0,0,.4)">
+  <div style="padding:.9rem 1.2rem;border-bottom:1px solid #c5bde8;display:flex;align-items:center;justify-content:space-between;background:#EAF3DE;border-radius:14px 14px 0 0">
+    <span style="font-size:14px;font-weight:700;color:#27500A">⚙ Conectar ao Google Sheets</span>
+    <button onclick="closeApiSettings()" style="background:#C0DD97;border:1px solid #27500A44;border-radius:7px;padding:3px 9px;cursor:pointer;font-size:12px;color:#27500A">✕</button>
+  </div>
+  <div style="padding:1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem">
+    <div style="font-size:12px;color:#5a5088;line-height:1.6">
+      Com a API conectada, <strong>todas as alterações ficam salvas na planilha Google Sheets</strong> e qualquer pessoa que abrir o link vê os dados atualizados em tempo real.
+    </div>
+    <div>
+      <div style="font-size:10px;color:#8880b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">URL do Google Apps Script</div>
+      <input id="gasUrlInput" type="url" placeholder="https://script.google.com/macros/s/AKfyc.../exec"
+        style="width:100%;font-size:12px;padding:7px 10px;border:1px solid #b5aee0;border-radius:8px;background:#ede9f8;color:#2a2250;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="testGasConnection()" style="flex:1;font-size:12px;padding:7px;border:1px solid #7060b0;border-radius:8px;background:#ede9f8;color:#7060b0;cursor:pointer;font-weight:600">🔗 Testar conexão</button>
+      <button onclick="saveGasUrl()" style="flex:1;font-size:12px;padding:7px;border:none;border-radius:8px;background:#27500A;color:#fff;cursor:pointer;font-weight:700">✓ Salvar e conectar</button>
+    </div>
+    <div id="gasTestResult" style="font-size:12px;min-height:20px"></div>
+    <div style="background:#ede9f8;border-radius:8px;padding:.7rem .9rem;font-size:11px;color:#5a5088;line-height:1.8">
+      <strong style="color:#2a2250">Como obter a URL:</strong><br>
+      1. Abra a planilha Google Sheets → <strong>Extensões → Apps Script</strong><br>
+      2. Cole o código do arquivo <strong>Code.gs</strong> entregue junto<br>
+      3. Clique em <strong>Implantar → Nova implantação</strong><br>
+      4. Tipo: <em>Aplicativo web</em> · Executar como: <em>Eu</em> · Acesso: <em>Qualquer pessoa</em><br>
+      5. Copie a URL gerada e cole aqui acima
+    </div>
+  </div>
+</div>
+ 
 <!-- DRAWER FERIADOS & FOLGAS EMENDA -->
 <div id="holidayOverlay" onclick="closeHolidayMgr()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;backdrop-filter:blur(3px)"></div>
 <div id="holidayDrawer" style="position:fixed;top:0;right:-480px;width:460px;height:100vh;background:#f0edf9;border-left:1px solid #b5aee0;z-index:1201;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.4)">
@@ -1045,34 +1083,110 @@ function render(){
   tbl.innerHTML=h;
 }
  
-// ── STORAGE COMPARTILHADO ───────────────────────────────────
-async function saveOverrides(){
-  try{if(window.storage)await window.storage.set('dim2026:overrides',JSON.stringify(overrides),true);}catch(e){}
+// ── STORAGE UNIFICADO ────────────────────────────────────────
+// Prioridade: 1) Google Apps Script (compartilhado) → 2) window.storage (Claude) → 3) localStorage
+ 
+let GAS_URL='';
+try{GAS_URL=localStorage.getItem('dim2026:gasUrl')||'';}catch(e){}
+ 
+function updateApiStatus(state){
+  const dot=document.getElementById('apiStatusDot');
+  const txt=document.getElementById('apiStatusText');
+  if(!dot||!txt)return;
+  const states={ok:{color:'#27ae60',text:'API conectada'},err:{color:'#c0392b',text:'Erro na API'},off:{color:'#b5aee0',text:'Sem API'},sync:{color:'#f59e0b',text:'Salvando...'}};
+  const s=states[state]||states.off;
+  dot.style.background=s.color;txt.textContent=s.text;
 }
-async function saveAbsences(){
-  try{if(window.storage)await window.storage.set('dim2026:absences',JSON.stringify(manualAbsences),true);}catch(e){}
+ 
+async function storeSet(key,value){
+  const data=JSON.stringify(value);
+  if(GAS_URL){
+    updateApiStatus('sync');
+    try{
+      const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({key,value:data})});
+      if(r.ok){updateApiStatus('ok');return;}
+    }catch(e){updateApiStatus('err');}
+  }
+  try{if(window.storage){await window.storage.set(key,data,true);return;}}catch(e){}
+  try{localStorage.setItem(key,data);}catch(e){}
 }
+ 
+async function storeGet(key){
+  if(GAS_URL){
+    try{
+      const r=await fetch(`${GAS_URL}?action=get&key=${encodeURIComponent(key)}&_=${Date.now()}`);
+      if(r.ok){const j=await r.json();if(j.ok&&j.value!=null)return JSON.parse(j.value);if(j.ok)return null;}
+    }catch(e){}
+  }
+  try{if(window.storage){const r=await window.storage.get(key,true);if(r&&r.value)return JSON.parse(r.value);}}catch(e){}
+  try{const v=localStorage.getItem(key);if(v)return JSON.parse(v);}catch(e){}
+  return null;
+}
+ 
+async function saveOverrides(){await storeSet('dim2026:overrides',overrides);}
+async function saveAbsences(){await storeSet('dim2026:absences',manualAbsences);}
+async function saveVacLimits(){await storeSet('dim2026:vacLimits',vacLimits);}
+async function savePending(){await storeSet('dim2026:pending',pendingRequests);}
+async function saveGlobalEvents(){await storeSet('dim2026:globalEvents',globalEvents);}
+ 
 async function loadShared(){
-  if(!window.storage){render();return;}
+  try{const d=await storeGet('dim2026:overrides');if(d)Object.keys(d).forEach(k=>overrides[k]=d[k]);}catch(e){}
   try{
-    const ov=await window.storage.get('dim2026:overrides',true);
-    if(ov&&ov.value){const d=JSON.parse(ov.value);Object.keys(d).forEach(k=>overrides[k]=d[k]);}
+    const arr=await storeGet('dim2026:absences');
+    if(arr)arr.forEach(a=>{
+      a.start=new Date(a.start);a.end=new Date(a.end);
+      if(!manualAbsences.some(x=>x.id===a.id))manualAbsences.push(a);
+    });
   }catch(e){}
+  try{const lim=await storeGet('dim2026:vacLimits');if(lim)vacLimits=lim;}catch(e){}
   try{
-    const ab=await window.storage.get('dim2026:absences',true);
-    if(ab&&ab.value){
-      JSON.parse(ab.value).forEach(a=>{
-        a.start=new Date(a.start);a.end=new Date(a.end);
-        if(!manualAbsences.some(x=>x.id===a.id))manualAbsences.push(a);
-      });
-    }
+    const arr=await storeGet('dim2026:pending');
+    if(arr)arr.forEach(p=>{
+      p.start=new Date(p.start);p.end=new Date(p.end);
+      if(!pendingRequests.some(x=>x.id===p.id))pendingRequests.push(p);
+    });
   }catch(e){}
-  await loadVacLimits();
-  await loadPending();
-  await loadGlobalEvents();
+  try{const ge=await storeGet('dim2026:globalEvents');if(ge)globalEvents=ge;}catch(e){}
   renderAbsList();renderSbAnalysts();renderEditList();render();
   updatePendingBadge();
-  showToast('✓ Dados sincronizados com todos os usuários');
+  if(GAS_URL)updateApiStatus('ok');
+  const env=GAS_URL?'✓ Dados carregados da planilha Google Sheets':window.storage?'✓ Dados sincronizados (Claude)':'✓ Dados carregados localmente';
+  showToast(env);
+}
+ 
+// ── PAINEL DE CONFIGURAÇÃO DA API ────────────────────────────
+function openApiSettings(){
+  document.getElementById('gasUrlInput').value=GAS_URL;
+  document.getElementById('gasTestResult').textContent='';
+  document.getElementById('apiOverlay').style.display='block';
+  document.getElementById('apiModal').style.display='flex';
+}
+function closeApiSettings(){
+  document.getElementById('apiOverlay').style.display='none';
+  document.getElementById('apiModal').style.display='none';
+}
+async function testGasConnection(){
+  const url=document.getElementById('gasUrlInput').value.trim();
+  const el=document.getElementById('gasTestResult');
+  if(!url){el.innerHTML='<span style="color:#c0392b">⚠ Cole a URL acima.</span>';return;}
+  el.innerHTML='<span style="color:#f59e0b">⏳ Testando...</span>';
+  try{
+    const r=await fetch(`${url}?action=ping&_=${Date.now()}`);
+    if(r.ok){const j=await r.json();
+      el.innerHTML=j.ok?`<span style="color:#27500A">✅ ${j.msg||'Conexão OK!'} Clique em Salvar.</span>`:`<span style="color:#c0392b">❌ Erro: ${j.error}</span>`;
+    }else el.innerHTML=`<span style="color:#c0392b">❌ HTTP ${r.status}. Verifique a URL e permissões.</span>`;
+  }catch(e){el.innerHTML='<span style="color:#c0392b">❌ Não conectou. Verifique se está implantado como "Qualquer pessoa".</span>';}
+}
+function saveGasUrl(){
+  const url=document.getElementById('gasUrlInput').value.trim();
+  GAS_URL=url;
+  try{localStorage.setItem('dim2026:gasUrl',url);}catch(e){}
+  closeApiSettings();
+  if(url){updateApiStatus('ok');showToast('✓ API configurada! Carregando dados da planilha...');
+    manualAbsences.length=0;Object.keys(overrides).forEach(k=>delete overrides[k]);
+    vacLimits={};pendingRequests.length=0;globalEvents={};
+    loadShared();
+  }else{updateApiStatus('off');showToast('API removida — usando armazenamento local');}
 }
  
 initAbsForm();renderSbAnalysts();render();
@@ -1263,8 +1377,9 @@ const VAC_LIMIT_RAW={
 // Limites editáveis pelas gestoras (sobrepõem VAC_LIMIT_RAW)
 let vacLimits={};
 function getVacLimit(name){return vacLimits[name]!==undefined?vacLimits[name]:VAC_LIMIT_RAW[name];}
-async function saveVacLimits(){try{if(window.storage)await window.storage.set('dim2026:vacLimits',JSON.stringify(vacLimits),true);}catch(e){}}
-async function loadVacLimits(){try{if(window.storage){const r=await window.storage.get('dim2026:vacLimits',true);if(r&&r.value)vacLimits=JSON.parse(r.value);}}catch(e){}}
+async function saveVacLimitsOld(){} // substituído por saveVacLimits() unificado
+async function loadVacLimits(){const lim=await storeGet('dim2026:vacLimits');if(lim)vacLimits=lim;} // mantido por compatibilidade
+async function loadVacLimitsOld(){} // substituído pelo loadShared() unificado
 function editVacLimit(name){
   const cur=getVacLimit(name)||'';
   const curFmt=cur?new Date(cur+'T00:00:00').toLocaleDateString('pt-BR'):'—';
@@ -1545,17 +1660,7 @@ const FERIADOS_NACIONAIS_2026=[
   {date:"2026-12-25",type:"Feriado",name:"Natal"},
 ];
  
-async function saveGlobalEvents(){
-  try{if(window.storage)await window.storage.set('dim2026:globalEvents',JSON.stringify(globalEvents),true);}catch(e){}
-}
-async function loadGlobalEvents(){
-  try{
-    if(window.storage){
-      const r=await window.storage.get('dim2026:globalEvents',true);
-      if(r&&r.value)globalEvents=JSON.parse(r.value);
-    }
-  }catch(e){}
-}
+// saveGlobalEvents e loadGlobalEvents → unificados em storeSet/storeGet acima
  
 function openHolidayMgr(){
   const t=toKey(new Date());
@@ -1681,22 +1786,7 @@ function renderHolidayList(){
 }
 let pendingRequests=[];
  
-async function savePending(){
-  try{if(window.storage)await window.storage.set('dim2026:pending',JSON.stringify(pendingRequests),true);}catch(e){}
-}
-async function loadPending(){
-  try{
-    if(window.storage){
-      const r=await window.storage.get('dim2026:pending',true);
-      if(r&&r.value){
-        JSON.parse(r.value).forEach(p=>{
-          p.start=new Date(p.start);p.end=new Date(p.end);
-          if(!pendingRequests.some(x=>x.id===p.id))pendingRequests.push(p);
-        });
-      }
-    }
-  }catch(e){}
-}
+// savePending, loadPending, saveGlobalEvents, loadGlobalEvents → unificados em storeSet/storeGet
  
 function updatePendingBadge(){
   const b=document.getElementById('pendingBadge');
