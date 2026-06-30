@@ -180,13 +180,6 @@ table{border-collapse:collapse;min-width:max-content}
       <div class="ciclo-card" id="cicloInfo">—</div>
     </div>
  
-    <div class="sync-section">
-      <div class="sb-label">Sincronizar planilha</div>
-      <button class="sync-btn" id="syncBtn" onclick="syncSheet()">🔄 Sincronizar agora</button>
-      <input class="sync-url" id="syncUrl" placeholder="URL pública CSV da planilha..."/>
-      <div class="sync-hint">Cole o link CSV de exportação da aba de ausências.</div>
-    </div>
- 
     <div class="sb-section">
       <div class="sb-label"><span>Nova ausência</span><button onclick="clearAbsForm()" style="font-size:9px;padding:1px 5px;border:.5px solid #b5aee0;border-radius:4px;background:none;cursor:pointer;color:#8880b8">Limpar</button></div>
       <div class="abs-form">
@@ -234,6 +227,7 @@ table{border-collapse:collapse;min-width:max-content}
         <div class="sb-leg"><span class="leg-sq" style="background:#1a6a6a"></span>Neg 2 — 1 focal + 3 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#1a4a8a"></span>Proc 1 — 1 focal + 4 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#cc8800"></span>Férias / ausência</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#7060b0;outline:2px dashed #7060b0;outline-offset:1px"></span>Bloco* redistribuído</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#00dd00"></span>↺ Início de ciclo</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#854F0B"></span>✎ Editado</div>
       </div>
@@ -672,12 +666,11 @@ function renderSbAnalysts(){
   document.getElementById('cnt-ausentes').textContent=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM)).length;
   document.getElementById('cnt-disponiveis').textContent=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM)).length;
  
-  // bloco do analista no mês atual
-  const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
-  const cn=getCycleNumber(refD);
-  const asgn=getCycleAssignment(cn);
+  // bloco efetivo do analista hoje (com redistribuição)
+  const today=new Date();
+  const effToday=getEffectiveAssignment(today);
   const blockOf={};
-  BLOCKS.forEach(b=>asgn[b].forEach(p=>{blockOf[p.name]=b;}));
+  BLOCKS.forEach(b=>effToday[b].forEach(p=>{blockOf[p.name]=b;}));
   const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
  
   document.getElementById('sbAnalysts').innerHTML=list.map(name=>{
@@ -747,17 +740,20 @@ function getDays(){
   return[];
 }
  
-function showTip(e,name,date,block,cycleNum){
+function showTip(e,name,date,block,cycleNum,fromBlock){
   const tip=document.getElementById('tooltip');
   const abs=getAbsInfo(name,date);
   const isMgr=MANAGERS.includes(name);
   const beforeStart=date<CYCLE_START;
   let h=`<strong>${name}</strong>${isMgr?' ⬥':''}<br>${WD_FULL[date.getDay()]} ${fmt(date)}`;
-  if(beforeStart) h+=`<br><span style="opacity:.7">Antes do início do dimensionamento</span>`;
-  else{
-    h+=`<br>Ciclo ${cycleNum+1}`;
-    if(abs){h+=`<br>Ausência: <strong>${abs.type}</strong>`;if(block)h+=`<br><span style="opacity:.7;font-size:10px">Bloco mantido: ${block}</span>`;}
-    else if(block) h+=`<br>Bloco: <strong>${block}</strong>`;
+  if(beforeStart) h+=`<br><span style="opacity:.7">Pré-ciclo</span>`;
+  else h+=`<br>Ciclo ${cycleNum+1}`;
+  if(abs){
+    h+=`<br>Ausência: <strong>${abs.type}</strong>`;
+    if(block)h+=`<br><span style="opacity:.7;font-size:10px">Bloco original: ${block}</span>`;
+  } else if(block){
+    h+=`<br>Bloco: <strong>${block}</strong>`;
+    if(fromBlock)h+=`<br><span style="opacity:.7;font-size:10px">↪ Redistribuído de ${fromBlock}</span>`;
   }
   if(editMode) h+=`<br><span style="opacity:.7;font-size:10px">Clique para editar</span>`;
   tip.innerHTML=h;tip.style.display='block';
@@ -794,6 +790,51 @@ function updateCicloInfo(date){
   document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
  
+// Retorna atribuição efetiva por dia: focais fixos, analistas redistribuídos
+// priorizando o bloco com menos analistas disponíveis
+function getEffectiveAssignment(date){
+  const base=date<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(date));
+ 
+  // Alvos: quantos não-focais por bloco no ciclo base
+  const targets={};
+  BLOCKS.forEach(b=>targets[b]=base[b].filter(p=>!p.isMgr).length);
+ 
+  // Pool de não-focais e seus blocos base
+  const flexPeople=[];
+  BLOCKS.forEach(b=>base[b].filter(p=>!p.isMgr).forEach(p=>flexPeople.push({name:p.name,baseBlock:b})));
+ 
+  // Apenas os disponíveis (não ausentes)
+  const availFlex=flexPeople.filter(p=>!isAbsent(p.name,date));
+ 
+  // Distribuição: prefere manter no bloco base; excedente vai para o mais carente
+  const filled={};BLOCKS.forEach(b=>filled[b]=0);
+  const assigned={};
+  const overflow=[];
+ 
+  availFlex.forEach(p=>{
+    if(filled[p.baseBlock]<targets[p.baseBlock]){
+      assigned[p.name]=p.baseBlock;filled[p.baseBlock]++;
+    }else{overflow.push(p);}
+  });
+ 
+  // Redistribui excedente para o bloco com maior déficit
+  overflow.forEach(p=>{
+    const neediest=[...BLOCKS]
+      .filter(b=>filled[b]<targets[b])
+      .sort((a,b)=>(filled[a]-targets[a])-(filled[b]-targets[b]))[0];
+    assigned[p.name]=neediest||p.baseBlock;
+    if(neediest)filled[neediest]++;
+  });
+ 
+  // Monta resultado: focais fixos + não-focais redistribuídos
+  const result={};
+  BLOCKS.forEach(b=>{
+    result[b]=base[b].filter(p=>p.isMgr).map(p=>({...p}));
+  });
+  Object.entries(assigned).forEach(([name,b])=>result[b].push({name,isMgr:false}));
+  return result;
+}
+ 
 function render(){
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
@@ -803,6 +844,27 @@ function render(){
   const refDate=days.find(d=>!isWeekend(d))||new Date(curY,curM,18);
   updateCicloInfo(refDate);
   if(!analysts.length){tbl.innerHTML=`<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>`;return;}
+ 
+  // Pré-computa blocos efetivos por dia (com redistribuição) e blocos base (para ausentes)
+  const dayEffMap={};  // dk → {name → effBlock} — disponíveis após redistribuição
+  const dayBaseMap={}; // dk → {name → baseBlock} — bloco original sem redistribuição
+  days.filter(d=>!isWeekend(d)).forEach(d=>{
+    const dk=toKey(d);
+    // Bloco base (fixo do ciclo)
+    const baseAsgn=d<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(d));
+    dayBaseMap[dk]={};
+    BLOCKS.forEach(b=>baseAsgn[b].forEach(p=>dayBaseMap[dk][p.name]=b));
+    // Bloco efetivo (com redistribuição)
+    const effAsgn=getEffectiveAssignment(d);
+    dayEffMap[dk]={};
+    BLOCKS.forEach(b=>effAsgn[b].forEach(p=>dayEffMap[dk][p.name]=b));
+  });
+ 
+  // Bloco de referência para o label da linha (bloco base do ciclo vigente no mês)
+  const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
+  const refBaseAsgn=refD<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(refD));
+  const refBaseMap={};
+  BLOCKS.forEach(b=>refBaseAsgn[b].forEach(p=>refBaseMap[p.name]=b));
  
   const sub=curView==='semana'?` · Sem ${curWk+1}`:curView==='ciclo'?` · Ciclo ${curWk+1}`:'';
   let h=`<thead><tr><td class="hdr-analistas">Analistas (${analysts.length})</td><td class="hdr-blocos" colspan="${days.length}">Blocos de tratativa — ${MONTHS_PT[curM]} ${curY}${sub}${editMode?' ✎':''}</td></tr>`;
@@ -818,44 +880,33 @@ function render(){
  
   analysts.forEach(name=>{
     const isMgr=MANAGERS.includes(name);
-    // bloco de referência para label
-    const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
-    const beforeStart=refD<CYCLE_START;
-    let refBlock='—';
+    // Bloco de referência para o label (base, sem redistribuição)
     const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
-    if(!beforeStart){
-      const refAsgn=getCycleAssignment(getCycleNumber(refD));
-      for(const b of BLOCKS){if(refAsgn[b].find(p=>p.name===name)){refBlock=b;break;}}
-    } else {
-      for(const b of BLOCKS){if(PRE_CYCLE_ASSIGNMENT[b]&&PRE_CYCLE_ASSIGNMENT[b].find(p=>p.name===name)){refBlock=b;break;}}
-    }
-    const rbColor=blkColor[refBlock]||'#555';
-    const tagBg=rbColor;
-    const tagLabel=refBlock;
+    const refBlock=refBaseMap[name]||'—';
+    const tagBg=blkColor[refBlock]||'#555';
  
     h+=`<tr>
       <td class="nome-cell${isMgr?' mgr':''}" onclick="toggleHighlight('${name}')">
         ${name}${isMgr?' ⬥':''}
-        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${tagLabel}</span>
+        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${refBlock}</span>
       </td>`;
  
     days.forEach(d=>{
       const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
       if(wk){h+=`<td class="day-cell wknd${cs?' ciclo-start':''}"></td>`;return;}
       const dk=toKey(d);
-      const beforeStart=d<CYCLE_START;
       const ovKey=`${name}|${dk}`;
       const hasOv=overrides.hasOwnProperty(ovKey);
       const abs=getAbsInfo(name,d);
-      let block=null;
-      if(beforeStart){
-        for(const b of BLOCKS){if(PRE_CYCLE_ASSIGNMENT[b]&&PRE_CYCLE_ASSIGNMENT[b].find(p=>p.name===name)){block=b;break;}}
-      } else {
-        const cn=getCycleNumber(d);
-        const asgn=getCycleAssignment(cn);
-        for(const b of BLOCKS){if(asgn[b].find(p=>p.name===name)){block=b;break;}}
-      }
+      const beforeStart=d<CYCLE_START;
       const cn=beforeStart?-1:getCycleNumber(d);
+ 
+      // Bloco efetivo (redistribuído) para disponíveis; base para ausentes
+      const effBlock=dayEffMap[dk]?.[name];   // definido só se disponível
+      const baseBlock=dayBaseMap[dk]?.[name]; // sempre definido
+      const block=effBlock!==undefined?effBlock:baseBlock; // o que mostrar
+ 
+      const isRedistributed=effBlock!==undefined&&effBlock!==baseBlock;
  
       let current=null,cell='';
       if(hasOv){
@@ -867,17 +918,19 @@ function render(){
         const isNew=abs.source!=='base';
         const ac=abs.type==='Férias'?'ferias':abs.type==='Day off'?'dayoff':'medica';
         cell=`<span class="pill p-${ac}">${abs.type}</span>${isNew?'<span class="new-abs-dot"></span>':''}`;
-        if(block) cell+=`<br><span style="font-size:9px;opacity:.45;font-style:italic">${block}</span>`;
+        if(baseBlock) cell+=`<br><span style="font-size:9px;opacity:.4;font-style:italic">${baseBlock}</span>`;
       } else if(block&&blockFilters.has(block)){
         current=block;
         const bc=block==='Neg 1'?'neg1':block==='Neg 2'?'neg2':'proc1';
-        cell=`<span class="pill p-${bc}">${block}</span>`;
+        // Indica redistribuição com borda tracejada
+        const extra=isRedistributed?'outline:1.5px dashed currentColor;outline-offset:-2px;':'';
+        cell=`<span class="pill p-${bc}" style="${extra}" title="${isRedistributed?'Redistribuído de '+baseBlock:''}">${block}${isRedistributed?'*':''}</span>`;
       }
  
       const ne=name.replace(/'/g,"\\'");
-      h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode&&!beforeStart?' editable':''}"
-        onclick="${editMode&&!beforeStart?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
-        onmouseenter="showTip(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${block||current||''}',${cn})"
+      h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode?' editable':''}"
+        onclick="${editMode?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
+        onmouseenter="showTip(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${block||current||''}',${cn}${isRedistributed?`,'${baseBlock}'`:',null'})"
         onmouseleave="hideTip()">${cell}</td>`;
     });
     h+=`</tr>`;
