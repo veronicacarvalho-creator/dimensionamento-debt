@@ -6,7 +6,7 @@
 <title>Dimensionamento - Debt Resolutions</title>
 </head>
 <body>
- 
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
@@ -158,15 +158,22 @@ table{border-collapse:collapse;min-width:max-content}
 .fer-foot-fixed:nth-child(1){left:0}
 .fer-foot{background:#f0edf9;border:.5px solid #e0dcf8;font-size:10px;text-align:center;padding:2px;min-width:28px}
 .fer-today-col{background:#FAEEDA44!important}
+.p-feriado{background:#c0392b}.p-emenda{background:#d35400}
+.hdr-dia.feriado-h{background:#c0392b!important;color:#fff!important}
+.hdr-dia.emenda-h{background:#d35400!important;color:#fff!important}
+.day-cell.feriado-col{background:#fdecea55}
+.day-cell.emenda-col{background:#fdf0e855}
+.holiday-drawer-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #c5bde8;border-radius:7px;background:#f5f3fc;font-size:12px;color:#2a2250}
+.holiday-drawer-item:hover{background:#ede9f8}
 .fer-pending-item{background:#fff;border:1px solid #f59e0b66;border-radius:8px;padding:.4rem .7rem;display:flex;align-items:center;gap:8px;font-size:12px;color:#2a2250}
 .fer-approve-btn{font-size:11px;padding:4px 12px;border:none;border-radius:6px;background:#27500A;color:#fff;cursor:pointer;font-weight:700}
 .fer-approve-btn:hover{background:#1a3506}
 .fer-reject-btn{font-size:11px;padding:4px 12px;border:none;border-radius:6px;background:#A32D2D;color:#fff;cursor:pointer;font-weight:700}
 .fer-reject-btn:hover{background:#7a1f1f}
 </style>
- 
- 
- 
+
+
+
 <div class="app">
   <div class="sidebar" id="sidebar">
     <div class="sb-header">
@@ -174,23 +181,23 @@ table{border-collapse:collapse;min-width:max-content}
       <button class="collapse-btn" id="collapseBtn" onclick="toggleSb()">&#8249;</button>
     </div>
     <div class="sb-icons"><div class="sb-icon" onclick="expandSb()">&#8250;</div></div>
- 
+
     <div class="sb-section">
       <div class="sb-label">Ciclo atual</div>
       <div class="ciclo-card" id="cicloInfo">—</div>
     </div>
- 
+
     <div class="sb-section">
       <div class="sb-label"><span>Nova ausência</span><button onclick="clearAbsForm()" style="font-size:9px;padding:1px 5px;border:.5px solid #b5aee0;border-radius:4px;background:none;cursor:pointer;color:#8880b8">Limpar</button></div>
       <div class="abs-form">
         <select id="absAnalyst"><option value="">Analista...</option></select>
-        <select id="absType"><option value="Férias">Férias</option><option value="Day off">Day off</option><option value="Lic. Médica">Lic. Médica</option></select>
+        <select id="absType"><option value="Férias">Férias</option><option value="Day off">Day off</option><option value="Lic. Médica">Lic. Médica</option><option value="Feriado">Feriado</option><option value="Folga Emenda">Folga Emenda</option></select>
         <div class="abs-form-row"><input type="date" id="absStart"/><input type="date" id="absEnd"/></div>
         <button class="abs-add-btn" onclick="addAbsence()">+ Adicionar ausência</button>
       </div>
       <div class="abs-list" id="absList"></div>
     </div>
- 
+
     <div class="sb-section">
       <div class="sb-label">Buscar</div>
       <div class="sb-search"><span>⌕</span><input type="text" placeholder="Nome..." oninput="searchAnalyst(this.value)"/></div>
@@ -227,13 +234,15 @@ table{border-collapse:collapse;min-width:max-content}
         <div class="sb-leg"><span class="leg-sq" style="background:#1a6a6a"></span>Neg 2 — 1 focal + 3 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#1a4a8a"></span>Proc 1 — 1 focal + 4 analistas</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#cc8800"></span>Férias / ausência</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#c0392b"></span>Feriado</div>
+        <div class="sb-leg"><span class="leg-sq" style="background:#d35400"></span>Folga Emenda</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#7060b0;outline:2px dashed #7060b0;outline-offset:1px"></span>Bloco* redistribuído</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#00dd00"></span>↺ Início de ciclo</div>
         <div class="sb-leg"><span class="leg-sq" style="background:#854F0B"></span>✎ Editado</div>
       </div>
     </div>
   </div>
- 
+
   <div class="main">
     <div class="topbar">
       <div class="main-tabs">
@@ -257,13 +266,14 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
       <div class="wk-btns" id="weekBtns" style="display:none"></div>
       <div style="margin-left:auto;display:flex;gap:6px">
+        <button onclick="openHolidayMgr()" style="font-size:11px;padding:4px 12px;border:1px solid #c0392b;border-radius:7px;cursor:pointer;background:#fdecea;color:#c0392b;font-weight:500">📅 Feriados</button>
         <button onclick="openTeamCfg()" style="font-size:11px;padding:4px 12px;border:1px solid #7060b0;border-radius:7px;cursor:pointer;background:#b5aee0;color:#2a2250;font-weight:500">👥 Equipe</button>
         <button class="edit-toggle" id="editToggle" onclick="toggleEditMode()">✎ Editar</button>
       </div>
     </div>
     <div class="grid-outer"><table id="mainTable"></table></div>
     </div>
- 
+
     <!-- ABA CONTROLE DE FÉRIAS -->
     <div id="feriasSection" style="display:none;flex-direction:column;flex:1;overflow:hidden">
       <div class="fer-toolbar">
@@ -290,10 +300,10 @@ table{border-collapse:collapse;min-width:max-content}
       <div class="fer-outer"><table id="feriasTable" class="fer-table"></table></div>
     </div>
   </div>
- 
+
   </div>
 </div>
- 
+
 <!-- MODAL NOVA FÉRIAS -->
 <div id="ferOverlay" onclick="closeFerModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1300;backdrop-filter:blur(3px)"></div>
 <div id="ferModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:380px;background:#f0edf9;border:1px solid #b5aee0;border-radius:14px;z-index:1301;flex-direction:column;gap:0;box-shadow:0 8px 40px rgba(0,0,0,.4)">
@@ -323,6 +333,50 @@ table{border-collapse:collapse;min-width:max-content}
     <button id="ferSaveBtn" onclick="saveFerModal()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#cc8800,#b07000);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(180,120,0,.3)">✓ Salvar Férias</button>
   </div>
 </div>
+<!-- DRAWER FERIADOS & FOLGAS EMENDA -->
+<div id="holidayOverlay" onclick="closeHolidayMgr()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;backdrop-filter:blur(3px)"></div>
+<div id="holidayDrawer" style="position:fixed;top:0;right:-480px;width:460px;height:100vh;background:#f0edf9;border-left:1px solid #b5aee0;z-index:1201;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.4)">
+  <div style="padding:1rem 1.2rem .85rem;border-bottom:1px solid #c5bde8;display:flex;align-items:center;justify-content:space-between;background:#fdecea;flex-shrink:0">
+    <span style="font-size:15px;font-weight:700;color:#c0392b">📅 Feriados & Folgas Emenda</span>
+    <button onclick="closeHolidayMgr()" style="background:#f5c6c6;border:1px solid #c0392b55;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:13px;color:#c0392b">✕</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:1rem 1.2rem">
+    <div style="margin-bottom:1.2rem">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c0392b;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #f5c6c6">Adicionar em lote</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px">
+          <label style="flex:1"><div style="font-size:10px;color:#8880b8;margin-bottom:3px">Tipo</div>
+            <select id="hdType" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250">
+              <option value="Feriado">🔴 Feriado</option><option value="Folga Emenda">🟠 Folga Emenda</option>
+            </select></label>
+          <label style="flex:1"><div style="font-size:10px;color:#8880b8;margin-bottom:3px">Nome / Descrição</div>
+            <input id="hdName" type="text" maxlength="30" placeholder="Ex: Tiradentes" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250"></label>
+        </div>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1"><div style="font-size:10px;color:#8880b8;margin-bottom:3px">Data início</div>
+            <input id="hdStart" type="date" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250"></label>
+          <label style="flex:1"><div style="font-size:10px;color:#8880b8;margin-bottom:3px">Data fim (lote)</div>
+            <input id="hdEnd" type="date" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #b5aee0;border-radius:7px;background:#ede9f8;color:#2a2250"></label>
+        </div>
+        <div style="font-size:10px;color:#8880b8">Início = Fim para um dia. Intervalo para adicionar múltiplos dias de uma vez (ex: toda uma semana de emenda).</div>
+        <button onclick="addHolidayBatch()" style="font-size:12px;padding:7px;border:none;border-radius:8px;background:#c0392b;color:#fff;cursor:pointer;font-weight:700">+ Adicionar ao dimensionamento</button>
+      </div>
+    </div>
+    <div style="margin-bottom:1.2rem">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c0392b;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #f5c6c6">Feriados nacionais 2026</div>
+      <button onclick="importNationalHolidays()" style="width:100%;font-size:12px;padding:7px;border:1px solid #c0392b55;border-radius:8px;background:#fdecea;color:#c0392b;cursor:pointer;font-weight:600">📋 Importar feriados nacionais + SP 2026</button>
+      <div style="font-size:10px;color:#8880b8;margin-top:5px">Importa automaticamente os feriados nacionais e estaduais (SP) de 2026 ainda não cadastrados.</div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c0392b;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #f5c6c6;display:flex;justify-content:space-between;align-items:center">
+        <span>Cadastrados <span id="hdCount" style="font-weight:400;opacity:.6"></span></span>
+        <button onclick="clearAllHolidays()" style="font-size:9px;padding:2px 7px;border:1px solid #c0392b55;border-radius:4px;background:none;cursor:pointer;color:#c0392b">Limpar tudo</button>
+      </div>
+      <div id="hdList" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+  </div>
+</div>
+
 <div id="teamOverlay" onclick="closeTeamCfg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1200;backdrop-filter:blur(3px)"></div>
 <div id="teamDrawer" style="position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#f0edf9;border-left:1px solid #b5aee0;z-index:1201;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.5)">
   <div style="padding:1rem 1.2rem .85rem;border-bottom:1px solid #c5bde8;display:flex;align-items:center;justify-content:space-between;background:#f0edf9;flex-shrink:0">
@@ -330,7 +384,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="closeTeamCfg()" style="background:#c5bde8;border:1px solid #b5aee0;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:13px;color:#5a5088">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:1rem 1.2rem">
- 
+
     <!-- ANALISTAS -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5a5088;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
@@ -344,7 +398,7 @@ table{border-collapse:collapse;min-width:max-content}
         <button onclick="teamAddAnalyst()" style="font-size:12px;padding:6px 12px;border:none;border-radius:7px;background:#7060b0;color:#fff;cursor:pointer;font-weight:600">+ Adicionar</button>
       </div>
     </div>
- 
+
     <!-- GESTORES -->
     <div style="margin-bottom:1.2rem">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2060a0;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid #c5bde8">
@@ -352,7 +406,7 @@ table{border-collapse:collapse;min-width:max-content}
       </div>
       <div id="teamManagerList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
- 
+
     <!-- DISTRIBUIÇÃO DOS BLOCOS -->
     <div style="background:#ede9f8;border:1px solid #c5bde8;border-radius:8px;padding:.75rem;font-size:11px;color:#5a5088;line-height:2">
       <div style="font-size:11px;font-weight:600;color:#2a2250;margin-bottom:.4rem">Distribuição por bloco</div>
@@ -365,7 +419,7 @@ table{border-collapse:collapse;min-width:max-content}
     <button onclick="teamApply()" style="flex:1;font-size:13px;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#7060b0,#6050a8);color:#fff;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(96,85,160,.4)">✓ Aplicar</button>
   </div>
 </div>
- 
+
 <style>
 .team-analyst-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #c5bde8;border-radius:7px;background:#ede9f8;font-size:12px;color:#2a2250}
 .team-analyst-item:hover{background:#ddd8f8}
@@ -376,7 +430,7 @@ table{border-collapse:collapse;min-width:max-content}
 .team-mgr-chip.is-mgr{background:#ddeeff;color:#2060a0;border-color:#2a5080;font-weight:600}
 .team-mgr-chip.is-mgr::before{content:'⬥ '}
 </style>
- 
+
 <div class="ctx-menu" id="ctxMenu">
   <div class="ctx-title" id="ctxTitle">Alterar</div>
   <div class="ctx-item" onclick="applyOverride('Neg 1')"><span class="ci-dot" style="background:#6a3fa0"></span>Neg 1</div>
@@ -386,13 +440,15 @@ table{border-collapse:collapse;min-width:max-content}
   <div class="ctx-item" onclick="applyOverride('Férias')"><span class="ci-dot" style="background:#cc8800"></span>Férias</div>
   <div class="ctx-item" onclick="applyOverride('Day off')"><span class="ci-dot" style="background:#3a8a3a"></span>Day off</div>
   <div class="ctx-item" onclick="applyOverride('Lic. Médica')"><span class="ci-dot" style="background:#cc3333"></span>Lic. Médica</div>
+  <div class="ctx-item" onclick="applyOverride('Feriado')"><span class="ci-dot" style="background:#c0392b"></span>Feriado</div>
+  <div class="ctx-item" onclick="applyOverride('Folga Emenda')"><span class="ci-dot" style="background:#d35400"></span>Folga Emenda</div>
   <div class="ctx-divider"></div>
   <div class="ctx-item ctx-danger" onclick="removeOverride()">✕ Remover edição</div>
   <div class="ctx-item" onclick="closeCtx()" style="color:#8880b8">Cancelar</div>
 </div>
 <div class="tooltip" id="tooltip"></div>
 <div class="toast" id="toast"></div>
- 
+
 <script>
 // Dados completos dos analistas (nome, ID, email) — mutável para permitir adição/remoção
 let ANALYST_DATA=[
@@ -419,13 +475,13 @@ const BLOCKS=["Neg 2","Neg 1","Proc 1"];
 // Distribuição: Neg2=4(1 focal+3nm), Neg1=6(1 focal+1 rotação+4nm), Proc1=5(1 focal+4nm) → total 15
 // Focais(4): mgr[0]→Neg2, mgr[1]→Neg1(focal), mgr[2]→Proc1, mgr[3]→Neg1(rotação, sem focal)
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
- 
+
 const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WD_SHORT=['D','S','T','Q','Q','S','S'];
 const WD_FULL=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const CYCLE_START=new Date(2026,6,6); // 06/07/2026
 const CYCLE_DAYS=15;
- 
+
 // Ciclos em dias CORRIDOS (não úteis)
 function dayDiff(a,b){
   return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/86400000);
@@ -444,7 +500,7 @@ function getCycleDates(cycleNum){
   const ce=new Date(CYCLE_START.getFullYear(),CYCLE_START.getMonth(),CYCLE_START.getDate()+(cycleNum+1)*CYCLE_DAYS-1);
   return{start:cs,end:ce};
 }
- 
+
 function getCycleAssignment(cycleNum){
   // Focais: circular shift por ciclo
   const ms=cycleNum%MANAGERS.length;
@@ -452,7 +508,7 @@ function getCycleAssignment(cycleNum){
   // Analistas não-focales: circular shift por ciclo (passo 3)
   const ns=(cycleNum*3)%NON_MANAGERS.length;
   const nm=[...NON_MANAGERS.slice(ns),...NON_MANAGERS.slice(0,ns)];
- 
+
   return {
     // Neg 2: 4 = 1 mgr + 3 nm
     "Neg 2":[
@@ -481,15 +537,15 @@ function getCycleAssignment(cycleNum){
   };
   // Total: 4+6+5 = 15 ✓ — focais: Neg2→mgr[0], Neg1→mgr[1], Proc1→mgr[2], Rotação→mgr[3] (analista em Neg1)
 }
- 
+
 function toKey(d){return d.toISOString().slice(0,10);}
 function isWeekend(d){return d.getDay()===0||d.getDay()===6;}
 function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 function fmtFull(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function parseDateInput(s){if(!s)return null;const[y,m,d]=s.split('-');return new Date(+y,+m-1,+d);}
- 
+
 const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marilia G.","fabiane.sihel":"Fabiane S.","rianne.sousa":"Rianne S."};
- 
+
 // Dimensionamento fixo pré-ciclo (até 03/07/2026), baseado no atual da planilha
 const PRE_CYCLE_ASSIGNMENT={
   "Neg 1":[
@@ -515,7 +571,7 @@ const PRE_CYCLE_ASSIGNMENT={
   ],
 };
 function resolveAnalyst(raw){if(!raw)return null;const k=raw.trim().toLowerCase();if(NAME_VARIANTS[k])return NAME_VARIANTS[k];return ANALYSTS.find(a=>a.toLowerCase()===k)||null;}
- 
+
 const BASE_ABS=[
   ["aline.machado","Day off","22/04/2026","22/04/2026"],
   ["adriana.rodrigues","Férias","09/03/2026","22/03/2026"],
@@ -569,19 +625,20 @@ function hasAbsInMonth(name,y,m){
   return allAbs().some(a=>a.name===name&&toKey(a.start)<=e&&toKey(a.end)>=s);
 }
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
- 
+
 // STATE
 const _now=new Date();
 let curY=_now.getFullYear(),curM=_now.getMonth(),curView='mes',curWk=0;
 let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVal='',highlighted=new Set();
 let editMode=false;
 const overrides={};
+let globalEvents={}; // Feriados & Folgas Emenda — { "2026-09-07": { type:"Feriado", name:"..." } }
 let ctxName=null,ctxDate=null,ctxCurrent=null;
- 
+
 let sbOpen=true;
 function toggleSb(){sbOpen=!sbOpen;document.getElementById('sidebar').classList.toggle('collapsed',!sbOpen);document.getElementById('collapseBtn').innerHTML=sbOpen?'&#8249;':'&#8250;';}
 function expandSb(){sbOpen=true;document.getElementById('sidebar').classList.remove('collapsed');document.getElementById('collapseBtn').innerHTML='&#8249;';}
- 
+
 function initAbsForm(){
   const sel=document.getElementById('absAnalyst');
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
@@ -612,7 +669,7 @@ function renderAbsList(){
     return `<div class="abs-item"><span class="abs-item-type" style="background:${bg[a.type]||'#888'}">${a.type==='Day off'?'DO':a.type==='Férias'?'Fér':'Lic'}</span><span class="abs-item-name">${a.name} · ${r}</span><button class="abs-del" onclick="removeManualAbs(${a.id})">✕</button></div>`;
   }).join('');
 }
- 
+
 async function syncSheet(){
   const url=document.getElementById('syncUrl').value.trim();
   const btn=document.getElementById('syncBtn');
@@ -641,7 +698,7 @@ async function syncSheet(){
     setTimeout(()=>{btn.textContent='🔄 Sincronizar agora';btn.classList.remove('error');},4000);
   }
 }
- 
+
 function setFilter(f,btn){filterMode=f;document.querySelectorAll('.sb-pill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');highlighted.clear();renderSbAnalysts();render();}
 function toggleBlock(b,btn){if(blockFilters.has(b)){if(blockFilters.size>1)blockFilters.delete(b);}else blockFilters.add(b);btn.classList.toggle('active',blockFilters.has(b));render();}
 function searchAnalyst(v){searchVal=v.toLowerCase();renderSbAnalysts();render();}
@@ -665,14 +722,14 @@ function renderSbAnalysts(){
   document.getElementById('cnt-focales').textContent=MANAGERS.length;
   document.getElementById('cnt-ausentes').textContent=ANALYSTS.filter(a=>hasAbsInMonth(a,curY,curM)).length;
   document.getElementById('cnt-disponiveis').textContent=ANALYSTS.filter(a=>!hasAbsInMonth(a,curY,curM)).length;
- 
+
   // bloco efetivo do analista hoje (com redistribuição)
   const today=new Date();
   const effToday=getEffectiveAssignment(today);
   const blockOf={};
   BLOCKS.forEach(b=>effToday[b].forEach(p=>{blockOf[p.name]=b;}));
   const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
- 
+
   document.getElementById('sbAnalysts').innerHTML=list.map(name=>{
     const isMgr=MANAGERS.includes(name),hasAbs=hasAbsInMonth(name,curY,curM),sel=highlighted.has(name);
     const blk=blockOf[name];
@@ -683,7 +740,7 @@ function renderSbAnalysts(){
     </div>`;
   }).join('');
 }
- 
+
 function toggleEditMode(){editMode=!editMode;document.getElementById('editToggle').classList.toggle('on',editMode);document.getElementById('editToggle').textContent=editMode?'✎ Editando...':'✎ Editar';document.getElementById('editBadge').style.display=editMode?'inline-flex':'none';render();if(editMode)showToast('Modo edição ativo — clique em qualquer célula');}
 function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=`${name} · ${fmt(dateObj)}`;menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
 function closeCtx(){document.getElementById('ctxMenu').style.display='none';}
@@ -694,11 +751,11 @@ function clearOverrides(){if(!Object.keys(overrides).length)return;if(!confirm('
 function renderEditList(){
   const el=document.getElementById('editList');const keys=Object.keys(overrides);
   if(!keys.length){el.innerHTML='<span style="font-size:11px;color:#8880b8">Nenhuma edição.</span>';return;}
-  const bgMap={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a','Férias':'#cc8800','Day off':'#3a8a3a','Lic. Médica':'#cc3333'};
+  const bgMap={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a','Férias':'#cc8800','Day off':'#3a8a3a','Lic. Médica':'#cc3333','Feriado':'#c0392b','Folga Emenda':'#d35400'};
   el.innerHTML=keys.map(k=>{const[name,dk]=k.split('|');const val=overrides[k];return `<div class="edit-item"><span class="edit-badge-sb" style="background:${bgMap[val]||'#888'}">${val}</span><span style="flex:1;font-size:10px">${name}<br><span style="opacity:.6">${dk.slice(5).replace('-','/')}</span></span><button class="edit-del" onclick="removeOverrideKey('${k}')">✕</button></div>`;}).join('');
 }
 document.addEventListener('click',e=>{if(!document.getElementById('ctxMenu').contains(e.target))closeCtx();});
- 
+
 function setView(v){
   curView=v;
   ['btnMes','btnSem','btnCiclo'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['mes','semana','ciclo'][i]===v));
@@ -739,7 +796,7 @@ function getDays(){
   if(curView==='ciclo'){const{start,end}=getCycleDates(curWk);if(!start||!end)return[];const days=[];const d=new Date(start);while(toKey(d)<=toKey(end)){days.push(new Date(d));d.setDate(d.getDate()+1);}return days;}
   return[];
 }
- 
+
 function showTip(e,name,date,block,cycleNum,fromBlock){
   const tip=document.getElementById('tooltip');
   const abs=getAbsInfo(name,date);
@@ -766,7 +823,7 @@ function showFerTip(e,html){
 }
 function hideTip(){document.getElementById('tooltip').style.display='none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
- 
+
 function updateCicloInfo(date){
   const beforeStart=date<CYCLE_START;
   if(beforeStart){
@@ -789,34 +846,34 @@ function updateCicloInfo(date){
     <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
   document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
- 
+
 // Retorna atribuição efetiva por dia: focais fixos, analistas redistribuídos
 // priorizando o bloco com menos analistas disponíveis
 function getEffectiveAssignment(date){
   const base=date<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(date));
- 
+
   // Alvos: quantos não-focais por bloco no ciclo base
   const targets={};
   BLOCKS.forEach(b=>targets[b]=base[b].filter(p=>!p.isMgr).length);
- 
+
   // Pool de não-focais e seus blocos base
   const flexPeople=[];
   BLOCKS.forEach(b=>base[b].filter(p=>!p.isMgr).forEach(p=>flexPeople.push({name:p.name,baseBlock:b})));
- 
+
   // Apenas os disponíveis (não ausentes)
   const availFlex=flexPeople.filter(p=>!isAbsent(p.name,date));
- 
+
   // Distribuição: prefere manter no bloco base; excedente vai para o mais carente
   const filled={};BLOCKS.forEach(b=>filled[b]=0);
   const assigned={};
   const overflow=[];
- 
+
   availFlex.forEach(p=>{
     if(filled[p.baseBlock]<targets[p.baseBlock]){
       assigned[p.name]=p.baseBlock;filled[p.baseBlock]++;
     }else{overflow.push(p);}
   });
- 
+
   // Redistribui excedente para o bloco com maior déficit
   overflow.forEach(p=>{
     const neediest=[...BLOCKS]
@@ -825,7 +882,7 @@ function getEffectiveAssignment(date){
     assigned[p.name]=neediest||p.baseBlock;
     if(neediest)filled[neediest]++;
   });
- 
+
   // Monta resultado: focais fixos + não-focais redistribuídos
   const result={};
   BLOCKS.forEach(b=>{
@@ -834,7 +891,7 @@ function getEffectiveAssignment(date){
   Object.entries(assigned).forEach(([name,b])=>result[b].push({name,isMgr:false}));
   return result;
 }
- 
+
 function render(){
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
@@ -844,7 +901,7 @@ function render(){
   const refDate=days.find(d=>!isWeekend(d))||new Date(curY,curM,18);
   updateCicloInfo(refDate);
   if(!analysts.length){tbl.innerHTML=`<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>`;return;}
- 
+
   // Pré-computa blocos efetivos por dia (com redistribuição) e blocos base (para ausentes)
   const dayEffMap={};  // dk → {name → effBlock} — disponíveis após redistribuição
   const dayBaseMap={}; // dk → {name → baseBlock} — bloco original sem redistribuição
@@ -859,38 +916,41 @@ function render(){
     dayEffMap[dk]={};
     BLOCKS.forEach(b=>effAsgn[b].forEach(p=>dayEffMap[dk][p.name]=b));
   });
- 
+
   // Bloco de referência para o label da linha (bloco base do ciclo vigente no mês)
   const refD=new Date(curY,curM,Math.min(20,new Date(curY,curM+1,0).getDate()));
   const refBaseAsgn=refD<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(refD));
   const refBaseMap={};
   BLOCKS.forEach(b=>refBaseAsgn[b].forEach(p=>refBaseMap[p.name]=b));
- 
+
   const sub=curView==='semana'?` · Sem ${curWk+1}`:curView==='ciclo'?` · Ciclo ${curWk+1}`:'';
   let h=`<thead><tr><td class="hdr-analistas">Analistas (${analysts.length})</td><td class="hdr-blocos" colspan="${days.length}">Blocos de tratativa — ${MONTHS_PT[curM]} ${curY}${sub}${editMode?' ✎':''}</td></tr>`;
   h+=`<tr><td class="hdr-analistas" style="font-size:10px;opacity:.7">Nome · ciclo atual</td>`;
   days.forEach(d=>{
     const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
     const cn=cs?getCycleNumber(d):-1;
-    h+=`<td class="hdr-dia${wk?' wknd':''}${tod?' today-h':''}${cs?' ciclo-start':''}" title="${cs?`↺ Início Ciclo ${cn+1}`:''}">
-      ${d.getDate()}${cs?`<br><span style="font-size:8px;color:#00dd00;font-weight:700">↺C${cn+1}</span>`:`<br><span style="font-size:9px;opacity:.7">${WD_SHORT[d.getDay()]}</span>`}
+    const dk=toKey(d);
+    const gEv=!wk?globalEvents[dk]:null;
+    const gCls=gEv?(gEv.type==='Feriado'?' feriado-h':' emenda-h'):'';
+    h+=`<td class="hdr-dia${wk?' wknd':''}${tod?' today-h':''}${cs?' ciclo-start':''}${gCls}" title="${cs?`↺ Início Ciclo ${cn+1}`:gEv?gEv.name:''}">
+      ${d.getDate()}${cs?`<br><span style="font-size:8px;color:#00dd00;font-weight:700">↺C${cn+1}</span>`:gEv?`<br><span style="font-size:7px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:32px">${gEv.name.split(' ')[0]}</span>`:`<br><span style="font-size:9px;opacity:.7">${WD_SHORT[d.getDay()]}</span>`}
     </td>`;
   });
   h+=`</tr></thead><tbody>`;
- 
+
   analysts.forEach(name=>{
     const isMgr=MANAGERS.includes(name);
     // Bloco de referência para o label (base, sem redistribuição)
     const blkColor={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a'};
     const refBlock=refBaseMap[name]||'—';
     const tagBg=blkColor[refBlock]||'#555';
- 
+
     h+=`<tr>
       <td class="nome-cell${isMgr?' mgr':''}" onclick="toggleHighlight('${name}')">
         ${name}${isMgr?' ⬥':''}
         <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${refBlock}</span>
       </td>`;
- 
+
     days.forEach(d=>{
       const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
       if(wk){h+=`<td class="day-cell wknd${cs?' ciclo-start':''}"></td>`;return;}
@@ -898,21 +958,27 @@ function render(){
       const ovKey=`${name}|${dk}`;
       const hasOv=overrides.hasOwnProperty(ovKey);
       const abs=getAbsInfo(name,d);
+      const gEv=globalEvents[dk]; // Feriado / Folga Emenda global
       const beforeStart=d<CYCLE_START;
       const cn=beforeStart?-1:getCycleNumber(d);
- 
+
       // Bloco efetivo (redistribuído) para disponíveis; base para ausentes
-      const effBlock=dayEffMap[dk]?.[name];   // definido só se disponível
-      const baseBlock=dayBaseMap[dk]?.[name]; // sempre definido
-      const block=effBlock!==undefined?effBlock:baseBlock; // o que mostrar
- 
+      const effBlock=dayEffMap[dk]?.[name];
+      const baseBlock=dayBaseMap[dk]?.[name];
+      const block=effBlock!==undefined?effBlock:baseBlock;
       const isRedistributed=effBlock!==undefined&&effBlock!==baseBlock;
- 
+
       let current=null,cell='';
+      const gColCls=gEv?(gEv.type==='Feriado'?' feriado-col':' emenda-col'):'';
       if(hasOv){
         current=overrides[ovKey];
-        const oc=current==='Neg 1'?'neg1':current==='Neg 2'?'neg2':current==='Proc 1'?'proc1':current==='Férias'?'ferias':current==='Day off'?'dayoff':'medica';
+        const oc=current==='Neg 1'?'neg1':current==='Neg 2'?'neg2':current==='Proc 1'?'proc1':current==='Férias'?'ferias':current==='Day off'?'dayoff':current==='Feriado'?'feriado':current==='Folga Emenda'?'emenda':'medica';
         cell=`<span class="pill p-${oc}">${current}</span><span class="manual-dot"></span>`;
+      } else if(gEv&&!abs){
+        // Global event: Feriado ou Folga Emenda (sem ausência individual)
+        current=gEv.type;
+        const gc=gEv.type==='Feriado'?'feriado':'emenda';
+        cell=`<span class="pill p-${gc}">${gEv.type}</span>`;
       } else if(abs){
         current=abs.type;
         const isNew=abs.source!=='base';
@@ -926,21 +992,27 @@ function render(){
         const extra=isRedistributed?'outline:1.5px dashed currentColor;outline-offset:-2px;':'';
         cell=`<span class="pill p-${bc}" style="${extra}" title="${isRedistributed?'Redistribuído de '+baseBlock:''}">${block}${isRedistributed?'*':''}</span>`;
       }
- 
+
       const ne=name.replace(/'/g,"\\'");
-      h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode?' editable':''}"
+      h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode?' editable':''}${gColCls}"
         onclick="${editMode?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
         onmouseenter="showTip(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${block||current||''}',${cn}${isRedistributed?`,'${baseBlock}'`:',null'})"
         onmouseleave="hideTip()">${cell}</td>`;
     });
     h+=`</tr>`;
   });
- 
+
   h+=`<tr><td colspan="${days.length+1}" style="height:5px;background:#ede9f8"></td></tr>`;
   h+=`<tr class="ctrl-row"><td class="ctrl-nome">Disponíveis</td>`;
   days.forEach(d=>{
     if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
     const cs=isCycleStart(d);
+    const dk=toKey(d);
+    const gEv=globalEvents[dk];
+    if(gEv){
+      const col=gEv.type==='Feriado'?'#c0392b':'#d35400';
+      h+=`<td style="color:${col};font-weight:700" class="${cs?'ciclo-start':''}">${gEv.type==='Feriado'?'Fer':'Emg'}</td>`;return;
+    }
     const aus=ANALYSTS.filter(a=>isAbsent(a,d)).length;
     const av=ANALYSTS.length-aus;
     const col=aus>=4?'#ff6b6b':aus>=2?'#ffb347':'#7adb78';
@@ -950,6 +1022,8 @@ function render(){
   days.forEach(d=>{
     if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
     const cs=isCycleStart(d);
+    const gEv=globalEvents[toKey(d)];
+    if(gEv){h+=`<td class="${cs?'ciclo-start':''}">—</td>`;return;}
     const gok=MANAGERS.filter(m=>!isAbsent(m,d)).length;
     const col=gok<=1?'#ff6b6b':gok===2?'#ffb347':'#7adb78';
     h+=`<td style="color:${col}" class="${cs?'ciclo-start':''}">${gok}</td>`;
@@ -957,7 +1031,7 @@ function render(){
   h+=`</tr></tbody>`;
   tbl.innerHTML=h;
 }
- 
+
 // ── STORAGE COMPARTILHADO ───────────────────────────────────
 async function saveOverrides(){
   try{if(window.storage)await window.storage.set('dim2026:overrides',JSON.stringify(overrides),true);}catch(e){}
@@ -982,20 +1056,21 @@ async function loadShared(){
   }catch(e){}
   await loadVacLimits();
   await loadPending();
+  await loadGlobalEvents();
   renderAbsList();renderSbAnalysts();renderEditList();render();
   updatePendingBadge();
   showToast('✓ Dados sincronizados com todos os usuários');
 }
- 
+
 initAbsForm();renderSbAnalysts();render();
 loadShared();
- 
+
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
 const TEAM_DEFAULT_MANAGERS = [...MANAGERS];
 let teamAnalysts = [...ANALYSTS];
 let teamManagers = [...MANAGERS];
- 
+
 function openTeamCfg(){
   teamAnalysts = [...ANALYSTS];
   teamManagers = [...MANAGERS];
@@ -1007,14 +1082,14 @@ function closeTeamCfg(){
   document.getElementById('teamOverlay').style.display = 'none';
   document.getElementById('teamDrawer').style.right = '-440px';
 }
- 
+
 function teamRenderAll(){
   teamRenderAnalysts();
   teamRenderManagers();
   teamRenderPreview();
   document.getElementById('teamAnalystCount').textContent = '(' + teamAnalysts.length + ')';
 }
- 
+
 function teamRenderAnalysts(){
   const el = document.getElementById('teamAnalystList');
   el.innerHTML = teamAnalysts.map((name,i) => {
@@ -1027,12 +1102,12 @@ function teamRenderAnalysts(){
     '</div>';
   }).join('');
 }
- 
+
 function teamRenderManagers(){
   const el = document.getElementById('teamManagerList');
   const slotLabels = ['Neg 2','Neg 1','Proc 1','Rotação'];
   const slotColors = ['#1a6a6a','#6a3fa0','#1a4a8a','#888888'];
- 
+
   // Slots de focales
   let html = '<div style="margin-bottom:.8rem">';
   html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.5rem">Slots de focal por bloco — clique no analista abaixo para atribuir:</div>';
@@ -1046,7 +1121,7 @@ function teamRenderManagers(){
     html += '</div>';
   }
   html += '</div></div>';
- 
+
   // Lista de todos os analistas
   html += '<div style="font-size:10px;color:#7a70a8;margin-bottom:.4rem">Todos os analistas \u2014 clique para colocar no pr\u00f3ximo slot vazio:</div>';
   html += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
@@ -1059,12 +1134,12 @@ function teamRenderManagers(){
     html += (isMgr ? '\u25c6 ' : '') + name + '</button>';
   });
   html += '</div>';
- 
+
   el.innerHTML = html;
 }
- 
+
 let teamPendingName = null;
- 
+
 function teamSelectForSlot(name){
   const idx = teamManagers.indexOf(name);
   if(idx >= 0){
@@ -1084,12 +1159,12 @@ function teamSelectForSlot(name){
     showToast('Todos os slots ocupados \u2014 clique em \u2715 para liberar um');
   }
 }
- 
+
 function teamRemoveSlot(slotIdx){
   teamManagers.splice(slotIdx, 1);
   teamRenderAll();
 }
- 
+
 function teamRenderPreview(){
   const el = document.getElementById('teamBlockPreview');
   const mgrs = teamManagers;
@@ -1110,20 +1185,20 @@ function teamAddAnalyst(){
   input.value = '';
   teamRenderAll();
 }
- 
+
 function teamRemoveAnalyst(name){
   if(!confirm('Remover ' + name + ' da equipe?')) return;
   teamAnalysts = teamAnalysts.filter(a => a !== name);
   teamManagers = teamManagers.filter(a => a !== name);
   teamRenderAll();
 }
- 
- 
- 
+
+
+
 function teamApply(){
   if(teamAnalysts.length < 1){ showToast('A equipe não pode ficar vazia'); return; }
   if(teamManagers.length === 0){ showToast('Defina pelo menos 1 focal'); return; }
- 
+
   // Atualiza as variáveis globais
   ANALYSTS.length = 0;
   teamAnalysts.forEach(a => ANALYSTS.push(a));
@@ -1131,10 +1206,10 @@ function teamApply(){
   teamManagers.forEach(m => MANAGERS.push(m));
   NON_MANAGERS.length = 0;
   ANALYSTS.filter(a => !MANAGERS.includes(a)).forEach(a => NON_MANAGERS.push(a));
- 
+
   // Remove overrides de analistas removidos
   Object.keys(overrides).forEach(k=>{if(!ANALYSTS.includes(k.split('|')[0]))delete overrides[k];});
- 
+
   closeTeamCfg();
   // Re-init form dropdown com novos analistas
   const sel=document.getElementById('absAnalyst');
@@ -1148,14 +1223,14 @@ function teamApply(){
   saveOverrides();
   showToast('✓ Equipe atualizada — ambas as abas atualizadas!');
 }
- 
+
 function teamReset(){
   if(!confirm('Restaurar equipe original?')) return;
   teamAnalysts = [...TEAM_DEFAULT_ANALYSTS];
   teamManagers = [...TEAM_DEFAULT_MANAGERS];
   teamRenderAll();
 }
- 
+
 // ── CONTROLE DE FÉRIAS ──────────────────────────────────────────
 // Dados de férias usam allAbs() como fonte única (baseAbsences + manualAbsences)
 const M1_MAP={
@@ -1202,20 +1277,20 @@ const FERIAS_WEEKS=(function(){
   }
   return wks;
 })();
- 
+
 // Férias usam allAbs() como fonte unificada — sem feriasList separado
 function isOnVacWk(name,ws,we){return allAbs().some(f=>f.name===name&&f.start<=we&&f.end>=ws);}
 function getVacWk(name,ws,we){return allAbs().find(f=>f.name===name&&f.start<=we&&f.end>=ws)||null;}
 function countVacWk(ws,we){return ANALYSTS.filter(a=>isOnVacWk(a,ws,we)).length;}
 function countBD(s,e){let c=0;const d=new Date(s);while(d<=e){if(d.getDay()!==0&&d.getDay()!==6)c++;d.setDate(d.getDate()+1);}return c;}
 function maxSimul(s,e){let mx=0;FERIAS_WEEKS.forEach(wk=>{if(wk.start>e||wk.end<s)return;const c=countVacWk(wk.start,wk.end);if(c>mx)mx=c;});return mx;}
- 
+
 function renderFeriasTable(){
   const tbl=document.getElementById('feriasTable');
   if(!tbl)return;
   const today=new Date();
   let h='<thead>';
- 
+
   // Linha 1: Anos
   h+='<tr>';
   h+='<td class="fer-hdr-fixed" style="min-width:110px;left:0">M1</td>';
@@ -1226,7 +1301,7 @@ function renderFeriasTable(){
   if(prevY)yGroups.push({y:prevY,s:ySpan});
   yGroups.forEach(g=>h+=`<td colspan="${g.s}" class="fer-hdr-year">${g.y}</td>`);
   h+='</tr>';
- 
+
   // Linha 2: Meses
   h+='<tr><td class="fer-hdr-fixed" colspan="3" style="left:0;font-size:9px;color:#ccc;text-align:center">Semana →</td>';
   let prevM=null,mSpan=0,mLabel='';
@@ -1239,7 +1314,7 @@ function renderFeriasTable(){
     if(i===FERIAS_WEEKS.length-1)h+=`<td colspan="${mSpan}" class="fer-hdr-month">${mLabel}</td>`;
   });
   h+='</tr>';
- 
+
   // Linha 3: Número da semana no ano
   h+='<tr><td class="fer-hdr-fixed" colspan="3" style="left:0"></td>';
   let wnMap={};
@@ -1252,7 +1327,7 @@ function renderFeriasTable(){
       onmouseleave="hideTip()">${wn}</td>`;
   });
   h+='</tr></thead><tbody>';
- 
+
   // Linhas de analistas
   ANALYSTS.forEach(name=>{
     const m1=M1_MAP[name]||'—';
@@ -1263,12 +1338,12 @@ function renderFeriasTable(){
     const limStyle=daysLeft<0?'background:#FCEBEB;color:#A32D2D;font-weight:700':daysLeft<60?'background:#FFF3CD;color:#854F0B;font-weight:600':'';
     const m1bg=m1.includes('Veronica')?'#2a6099':'#6a3fa0';
     const ne=name.replace(/'/g,"\\'");
- 
+
     h+=`<tr>`;
     h+=`<td class="fer-cell-fixed" style="left:0;font-size:10px;color:#fff;background:${m1bg};text-align:center">${m1}</td>`;
     h+=`<td class="fer-cell-fixed fer-name" style="left:110px" onclick="openFerModal('${ne}')">${name} <span style="font-size:9px;opacity:.5">＋</span></td>`;
     h+=`<td class="fer-cell-fixed" style="left:230px;font-size:10px;text-align:center;${limStyle};cursor:pointer" onclick="editVacLimit('${ne}')" title="Clique para editar">${limStr} <span style="opacity:.4;font-size:9px">✎</span></td>`;
- 
+
     FERIAS_WEEKS.forEach(wk=>{
       const isTW=today>=wk.start&&today<=wk.end;
       const vac=getVacWk(name,wk.start,wk.end);
@@ -1295,7 +1370,7 @@ function renderFeriasTable(){
     });
     h+='</tr>';
   });
- 
+
   // Rodapé: contagem por semana
   h+='<tr><td class="fer-foot-fixed" colspan="3" style="left:0;text-align:center;font-weight:700">Simultâneos / semana</td>';
   FERIAS_WEEKS.forEach(wk=>{
@@ -1315,7 +1390,7 @@ function renderFeriasTable(){
     if(todayCol)todayCol.scrollIntoView({inline:'center',block:'nearest'});
   },100);
 }
- 
+
 function updateFeriasAlert(){
   const el=document.getElementById('feriasAlert');
   if(!el)return;
@@ -1338,7 +1413,7 @@ function updateFeriasAlert(){
     el.innerHTML='';
   }
 }
- 
+
 // Inicializa o select de analistas no modal
 function initFerModal(){
   const sel=document.getElementById('ferAnalyst');
@@ -1346,7 +1421,7 @@ function initFerModal(){
   sel.innerHTML='<option value="">Selecionar analista...</option>';
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
 }
- 
+
 function openFerModal(name){
   initFerModal();
   if(name){
@@ -1362,19 +1437,19 @@ function openFerModal(name){
   document.getElementById('ferOverlay').style.display='block';
   document.getElementById('ferModal').style.display='flex';
 }
- 
+
 function openFerModalWeek(name,wkStart,wkEnd){
   openFerModal(name);
   document.getElementById('ferStart').value=wkStart;
   document.getElementById('ferEnd').value=wkEnd;
   validateFerModal();
 }
- 
+
 function closeFerModal(){
   document.getElementById('ferOverlay').style.display='none';
   document.getElementById('ferModal').style.display='none';
 }
- 
+
 function validateFerModal(){
   const name=document.getElementById('ferAnalyst').value;
   const sVal=document.getElementById('ferStart').value;
@@ -1403,14 +1478,14 @@ function validateFerModal(){
   btn.textContent=(durOk&&warn3)?'⏳ Enviar para aprovação':'✓ Salvar Férias';
   btn.style.background=(durOk&&warn3)?'linear-gradient(135deg,#f59e0b,#d97706)':'linear-gradient(135deg,#cc8800,#b07000)';
 }
- 
+
 function saveFerModal(){
   const name=document.getElementById('ferAnalyst').value;
   const sVal=document.getElementById('ferStart').value;
   const eVal=document.getElementById('ferEnd').value;
   if(!name||!sVal||!eVal)return;
   const s=new Date(sVal+'T00:00:00'),e=new Date(eVal+'T00:00:00');
- 
+
   // Se 3+ simultâneos → vai para aprovação
   const simul=maxSimul(s,e);
   if(simul+1>=3){
@@ -1436,10 +1511,120 @@ function saveFerModal(){
     showToast(`✓ Férias de ${name} registrada (${fmt(s)} – ${fmt(e)})`);
   }
 }
- 
-// ── APROVAÇÕES PENDENTES ─────────────────────────────────────
+
+// ── FERIADOS & FOLGAS EMENDA ────────────────────────────────────
+// globalEvents declarado no topo junto com as demais variáveis de estado
+
+const FERIADOS_NACIONAIS_2026=[
+  {date:"2026-01-01",type:"Feriado",name:"Ano Novo"},
+  {date:"2026-01-25",type:"Feriado",name:"Aniversário de SP"},
+  {date:"2026-04-03",type:"Feriado",name:"Paixão de Cristo"},
+  {date:"2026-04-05",type:"Feriado",name:"Páscoa"},
+  {date:"2026-04-21",type:"Feriado",name:"Tiradentes"},
+  {date:"2026-05-01",type:"Feriado",name:"Dia do Trabalho"},
+  {date:"2026-06-04",type:"Feriado",name:"Corpus Christi"},
+  {date:"2026-07-09",type:"Feriado",name:"Revolução Constitucionalista"},
+  {date:"2026-09-07",type:"Feriado",name:"Independência do Brasil"},
+  {date:"2026-10-12",type:"Feriado",name:"N. Sra. Aparecida"},
+  {date:"2026-11-02",type:"Feriado",name:"Finados"},
+  {date:"2026-11-15",type:"Feriado",name:"Proclamação da República"},
+  {date:"2026-11-20",type:"Feriado",name:"Consciência Negra"},
+  {date:"2026-12-25",type:"Feriado",name:"Natal"},
+];
+
+async function saveGlobalEvents(){
+  try{if(window.storage)await window.storage.set('dim2026:globalEvents',JSON.stringify(globalEvents),true);}catch(e){}
+}
+async function loadGlobalEvents(){
+  try{
+    if(window.storage){
+      const r=await window.storage.get('dim2026:globalEvents',true);
+      if(r&&r.value)globalEvents=JSON.parse(r.value);
+    }
+  }catch(e){}
+}
+
+function openHolidayMgr(){
+  // Set default dates to today
+  const t=toKey(new Date());
+  document.getElementById('hdStart').value=t;
+  document.getElementById('hdEnd').value=t;
+  document.getElementById('hdName').value='';
+  renderHolidayList();
+  document.getElementById('holidayOverlay').style.display='block';
+  document.getElementById('holidayDrawer').style.right='0';
+}
+function closeHolidayMgr(){
+  document.getElementById('holidayOverlay').style.display='none';
+  document.getElementById('holidayDrawer').style.right='-480px';
+}
+
+function addHolidayBatch(){
+  const type=document.getElementById('hdType').value;
+  const name=document.getElementById('hdName').value.trim();
+  const sVal=document.getElementById('hdStart').value;
+  const eVal=document.getElementById('hdEnd').value;
+  if(!sVal||!eVal){showToast('⚠ Selecione as datas');return;}
+  const s=new Date(sVal+'T00:00:00'),e=new Date(eVal+'T00:00:00');
+  if(e<s){showToast('⚠ Data fim deve ser após início');return;}
+  let added=0;
+  const d=new Date(s);
+  while(d<=e){
+    if(!isWeekend(d)){ // só dias úteis
+      globalEvents[toKey(d)]={type,name:name||type};
+      added++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  renderHolidayList();
+  render();
+  saveGlobalEvents();
+  showToast(`✓ ${added} dia(s) adicionado(s) como ${type}`);
+}
+
+function importNationalHolidays(){
+  let added=0;
+  FERIADOS_NACIONAIS_2026.forEach(f=>{
+    if(!globalEvents[f.date]){globalEvents[f.date]={type:f.type,name:f.name};added++;}
+  });
+  renderHolidayList();render();saveGlobalEvents();
+  showToast(added?`✓ ${added} feriado(s) importado(s)`:'ℹ Todos os feriados nacionais já estavam cadastrados');
+}
+
+function deleteHoliday(dk){
+  delete globalEvents[dk];
+  renderHolidayList();render();saveGlobalEvents();
+}
+
+function clearAllHolidays(){
+  if(!Object.keys(globalEvents).length)return;
+  if(!confirm('Remover todos os feriados e folgas emenda cadastrados?'))return;
+  globalEvents={};
+  renderHolidayList();render();saveGlobalEvents();
+  showToast('Feriados removidos');
+}
+
+function renderHolidayList(){
+  const el=document.getElementById('hdList');
+  const cnt=document.getElementById('hdCount');
+  if(!el)return;
+  const keys=Object.keys(globalEvents).sort();
+  if(cnt)cnt.textContent='('+keys.length+')';
+  if(!keys.length){el.innerHTML='<div style="font-size:12px;color:#8880b8;padding:.5rem 0">Nenhum cadastrado ainda.</div>';return;}
+  const typeColor={Feriado:'#c0392b','Folga Emenda':'#d35400'};
+  el.innerHTML=keys.map(dk=>{
+    const ev=globalEvents[dk];
+    const d=new Date(dk+'T00:00:00');
+    const col=typeColor[ev.type]||'#888';
+    return `<div class="holiday-drawer-item">
+      <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${col};color:#fff;font-weight:700;flex-shrink:0">${ev.type==='Feriado'?'Fer':'Emenda'}</span>
+      <span style="flex:1"><strong style="font-size:12px">${fmtFull(d)}</strong> <span style="font-size:11px;color:#8880b8">${WD_FULL[d.getDay()]}</span><br><span style="font-size:11px;color:#5a5088">${ev.name||ev.type}</span></span>
+      <button onclick="deleteHoliday('${dk}')" style="background:none;border:none;cursor:pointer;font-size:13px;color:#8880b8" title="Remover">✕</button>
+    </div>`;
+  }).join('');
+}
 let pendingRequests=[];
- 
+
 async function savePending(){
   try{if(window.storage)await window.storage.set('dim2026:pending',JSON.stringify(pendingRequests),true);}catch(e){}
 }
@@ -1456,7 +1641,7 @@ async function loadPending(){
     }
   }catch(e){}
 }
- 
+
 function updatePendingBadge(){
   const b=document.getElementById('pendingBadge');
   const fb=document.getElementById('floatingApprovalBtn');
@@ -1466,18 +1651,18 @@ function updatePendingBadge(){
   if(fb){fb.style.display=n?'block':'none';}
   if(fc){fc.textContent=n;}
 }
- 
+
 function openApprovalModal(){
   renderApprovalModal();
   document.getElementById('approvalOverlay').style.display='block';
   document.getElementById('approvalModal').style.display='flex';
 }
- 
+
 function closeApprovalModal(){
   document.getElementById('approvalOverlay').style.display='none';
   document.getElementById('approvalModal').style.display='none';
 }
- 
+
 function renderApprovalModal(){
   const el=document.getElementById('approvalModalList');
   if(!el)return;
@@ -1508,19 +1693,19 @@ function renderApprovalModal(){
     </div>`;
   }).join('');
 }
- 
+
 function approveFromModal(id){
   approvePending(id);
   renderApprovalModal();
   if(!pendingRequests.length)closeApprovalModal();
 }
- 
+
 function rejectFromModal(id){
   rejectPending(id);
   renderApprovalModal();
   if(!pendingRequests.length)closeApprovalModal();
 }
- 
+
 function renderPendingPanel(){
   const panel=document.getElementById('ferPendingPanel');
   const list=document.getElementById('ferPendingList');
@@ -1544,7 +1729,7 @@ function renderPendingPanel(){
     </div>`;
   }).join('');
 }
- 
+
 function approvePending(id){
   const req=pendingRequests.find(r=>r.id===id);
   if(!req)return;
@@ -1555,7 +1740,7 @@ function approvePending(id){
   saveAbsences();savePending();
   showToast(`✓ Férias de ${req.name} aprovadas!`);
 }
- 
+
 function rejectPending(id){
   const req=pendingRequests.find(r=>r.id===id);
   if(!req)return;
@@ -1565,7 +1750,7 @@ function rejectPending(id){
   savePending();
   showToast(`✗ Férias de ${req.name} rejeitada${motivo?' — '+motivo:''}`);
 }
- 
+
 function removeFerById(id){
   // Ausências base não são deletáveis — use o painel lateral para adicionar exceção
   if(String(id).startsWith('base-')){
@@ -1578,9 +1763,9 @@ function removeFerById(id){
   saveAbsences();
   showToast('Férias removida');
 }
- 
+
 // Storage de férias unificado com saveAbsences() — fonte única: allAbs()
- 
+
 function switchMain(tab){
   const isDim=tab==='dim';
   document.getElementById('dimSection').style.display=isDim?'flex':'none';
@@ -1596,7 +1781,7 @@ function switchMain(tab){
     ⏳ <span id="floatingCount">0</span> aprovação(ões) pendente(s)
   </button>
 </div>
- 
+
 <!-- MODAL DE APROVAÇÕES -->
 <div id="approvalOverlay" onclick="closeApprovalModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1400;backdrop-filter:blur(3px)"></div>
 <div id="approvalModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(600px,95vw);max-height:80vh;background:#f0edf9;border:1px solid #b5aee0;border-radius:14px;z-index:1401;flex-direction:column;overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,.4)">
@@ -1610,11 +1795,10 @@ function switchMain(tab){
     Aprovações e rejeições são refletidas imediatamente para todos os usuários.
   </div>
 </div>
- 
+
 <style>
 @keyframes pulse-badge{from{box-shadow:0 4px 24px rgba(245,158,11,.5)}to{box-shadow:0 4px 32px rgba(245,158,11,.85),0 0 0 6px rgba(245,158,11,.15)}}
 </style>
- 
+
 </body>
 </html>
-
