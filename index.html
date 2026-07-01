@@ -739,7 +739,8 @@ async function syncSheet(){
       if(manualAbsences.some(a=>a.name===name&&toKey(a.start)===toKey(start)&&a.type===type)){skipped++;return;}
       manualAbsences.push({name,type,start,end,source:'sync',id:Date.now()+Math.random()});added++;
     });
-    renderAbsList();renderSbAnalysts();render();
+    renderAbsList();renderSbAnalysts();render();maybeRenderFerias();
+    saveAbsences(); // persiste ausências importadas
     btn.textContent='✓ Sincronizado!';btn.classList.remove('syncing');
     showToast(`✓ ${added} importada(s), ${skipped} ignorada(s)`);
     setTimeout(()=>{btn.textContent='🔄 Sincronizar agora';},3000);
@@ -1147,6 +1148,8 @@ async function loadShared(){
     });
   }catch(e){}
   try{const ge=await storeGet('dim2026:globalEvents');if(ge)globalEvents=ge;}catch(e){}
+  // Equipe (analistas e focais)
+  await loadTeam();
   renderAbsList();renderSbAnalysts();renderEditList();render();
   updatePendingBadge();
   if(GAS_URL)updateApiStatus('ok');
@@ -1326,7 +1329,7 @@ function teamApply(){
   if(teamAnalysts.length < 1){ showToast('A equipe não pode ficar vazia'); return; }
   if(teamManagers.length === 0){ showToast('Defina pelo menos 1 focal'); return; }
  
-  // Atualiza as variáveis globais
+  // Atualiza variáveis globais
   ANALYSTS.length = 0;
   teamAnalysts.forEach(a => ANALYSTS.push(a));
   MANAGERS.length = 0;
@@ -1338,17 +1341,65 @@ function teamApply(){
   Object.keys(overrides).forEach(k=>{if(!ANALYSTS.includes(k.split('|')[0]))delete overrides[k];});
  
   closeTeamCfg();
-  // Re-init form dropdown com novos analistas
   const sel=document.getElementById('absAnalyst');
   sel.innerHTML='<option value="">Analista...</option>';
   ANALYSTS.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
-  // Atualiza seletor do modal de férias
   initFerModal();
+  hdRenderCheckboxes();
   renderSbAnalysts();
   render();
   maybeRenderFerias();
   saveOverrides();
+  saveTeam();
   showToast('✓ Equipe atualizada — ambas as abas atualizadas!');
+}
+ 
+async function saveTeam(){
+  // Preserva emails/IDs do ANALYST_DATA original, adiciona entrada mínima para novos analistas
+  const data = ANALYSTS.map(name => {
+    return ANALYST_DATA.find(d => d.name === name) ||
+           {id: name.toLowerCase().replace(/[^a-z0-9]/g,'_'), email:'', name};
+  });
+  // Atualiza ANALYST_DATA com a lista final preservando dados existentes
+  ANALYST_DATA.length = 0;
+  data.forEach(d => ANALYST_DATA.push(d));
+  await storeSet('dim2026:team', { analysts: data, managers: [...MANAGERS] });
+}
+ 
+async function loadTeam(){
+  try{
+    const d = await storeGet('dim2026:team');
+    if(!d || !d.analysts || !d.analysts.length) return;
+ 
+    // Restaura ANALYST_DATA completo (preserva id/email/name)
+    ANALYST_DATA.length = 0;
+    d.analysts.forEach(a => {
+      if(typeof a === 'string') ANALYST_DATA.push({id:'', email:'', name:a});
+      else ANALYST_DATA.push(a);
+    });
+ 
+    // Restaura ANALYSTS a partir do ANALYST_DATA
+    ANALYSTS.length = 0;
+    ANALYST_DATA.forEach(a => ANALYSTS.push(a.name));
+ 
+    // Restaura MANAGERS e NON_MANAGERS
+    MANAGERS.length = 0;
+    (d.managers || []).forEach(m => MANAGERS.push(m));
+    NON_MANAGERS.length = 0;
+    ANALYSTS.filter(a => !MANAGERS.includes(a)).forEach(a => NON_MANAGERS.push(a));
+ 
+    // Sincroniza vars do drawer de equipe
+    teamAnalysts = [...ANALYSTS];
+    teamManagers = [...MANAGERS];
+ 
+    // Re-init dropdowns
+    const sel = document.getElementById('absAnalyst');
+    if(sel){
+      sel.innerHTML = '<option value="">Analista...</option>';
+      ANALYSTS.forEach(a => {const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
+    }
+    initFerModal();
+  }catch(e){}
 }
  
 function teamReset(){
