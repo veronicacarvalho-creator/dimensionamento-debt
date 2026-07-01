@@ -350,6 +350,9 @@ table{border-collapse:collapse;min-width:max-content}
     <div style="font-size:12px;color:#5a5088;line-height:1.6">
       Com a API conectada, <strong>todas as alterações ficam salvas na planilha Google Sheets</strong> e qualquer pessoa que abrir o link vê os dados atualizados em tempo real.
     </div>
+    <div style="background:#EAF3DE;border:1px solid #27500A33;border-radius:8px;padding:.6rem .8rem;font-size:11px;color:#27500A;line-height:1.7">
+      <strong>⚡ Para compartilhar com todos:</strong> após salvar a URL aqui, um diálogo vai mostrar a linha exata para adicionar no arquivo HTML antes de publicar no GitHub. Sem isso, só este navegador verá os dados.
+    </div>
     <div>
       <div style="font-size:10px;color:#8880b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">URL do Google Apps Script</div>
       <input id="gasUrlInput" type="url" placeholder="https://script.google.com/macros/s/AKfyc.../exec"
@@ -523,7 +526,11 @@ const ANALYSTS=ANALYST_DATA.map(a=>a.name);
 const MANAGERS=["Camila N.","Camilla T.","José N.","Sophia M."];
 const NON_MANAGERS=ANALYSTS.filter(a=>!MANAGERS.includes(a)); // 11 analistas
 const BLOCKS=["Neg 2","Neg 1","Proc 1"];
-// Distribuição: Neg2=4(1 focal+3nm), Neg1=6(1 focal+1 rotação+4nm), Proc1=5(1 focal+4nm) → total 15
+// ════════════════════════════════════════════════════════════════
+//  CONFIGURAÇÃO DA API — preencha antes de publicar no GitHub
+//  Cole aqui a URL do seu Google Apps Script
+// ════════════════════════════════════════════════════════════════
+const DEFAULT_GAS_URL = ''; // ← Cole a URL aqui
 // Focais(4): mgr[0]→Neg2, mgr[1]→Neg1(focal), mgr[2]→Proc1, mgr[3]→Neg1(rotação, sem focal)
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
  
@@ -1087,8 +1094,9 @@ function render(){
 // ── STORAGE UNIFICADO ────────────────────────────────────────
 // Prioridade: 1) Google Apps Script (compartilhado) → 2) window.storage (Claude) → 3) localStorage
  
-let GAS_URL='';
-try{GAS_URL=localStorage.getItem('dim2026:gasUrl')||'';}catch(e){}
+// Prioridade: DEFAULT_GAS_URL (embutido no HTML) > localStorage (configuração local)
+let GAS_URL = DEFAULT_GAS_URL;
+try{ if(!GAS_URL) GAS_URL = localStorage.getItem('dim2026:gasUrl') || ''; }catch(e){}
  
 function updateApiStatus(state){
   const dot=document.getElementById('apiStatusDot');
@@ -1160,7 +1168,14 @@ async function loadShared(){
 // ── PAINEL DE CONFIGURAÇÃO DA API ────────────────────────────
 function openApiSettings(){
   document.getElementById('gasUrlInput').value=GAS_URL;
-  document.getElementById('gasTestResult').textContent='';
+  const el=document.getElementById('gasTestResult');
+  if(DEFAULT_GAS_URL && GAS_URL===DEFAULT_GAS_URL){
+    el.innerHTML='<span style="color:#27500A">✅ URL embutida no HTML — todos os usuários já usam esta API automaticamente.</span>';
+  } else if(GAS_URL){
+    el.innerHTML='<span style="color:#f59e0b">⚠ URL configurada só neste navegador. Veja as instruções abaixo para compartilhar com todos.</span>';
+  } else {
+    el.innerHTML='';
+  }
   document.getElementById('apiOverlay').style.display='block';
   document.getElementById('apiModal').style.display='flex';
 }
@@ -1185,11 +1200,31 @@ function saveGasUrl(){
   GAS_URL=url;
   try{localStorage.setItem('dim2026:gasUrl',url);}catch(e){}
   closeApiSettings();
-  if(url){updateApiStatus('ok');showToast('✓ API configurada! Carregando dados da planilha...');
+  if(url){
+    updateApiStatus('ok');
+    // Recarrega dados da API
     manualAbsences.length=0;Object.keys(overrides).forEach(k=>delete overrides[k]);
     vacLimits={};pendingRequests.length=0;globalEvents={};
     loadShared();
-  }else{updateApiStatus('off');showToast('API removida — usando armazenamento local');}
+    // Mostra instrução para embutir no HTML (para compartilhar com todos)
+    setTimeout(()=>{
+      if(confirm(
+        '✅ API conectada neste navegador!\n\n' +
+        'Para que TODOS vejam os dados ao abrir o link, você precisa embutir a URL no arquivo HTML:\n\n' +
+        '1. Abra o arquivo dimensionamento_2026_v3.html num editor de texto\n' +
+        '2. Encontre a linha:  const DEFAULT_GAS_URL = \'\'\n' +
+        '3. Substitua por:    const DEFAULT_GAS_URL = \'' + url + '\'\n' +
+        '4. Salve e republique no GitHub\n\n' +
+        'Copiar instrução para a área de transferência?'
+      )){
+        try{navigator.clipboard.writeText(`const DEFAULT_GAS_URL = '${url}';`);}catch(e){}
+        showToast('✓ Linha copiada! Cole no HTML antes do próximo upload.');
+      }
+    }, 500);
+  }else{
+    updateApiStatus('off');
+    showToast('API removida — usando armazenamento local');
+  }
 }
  
 initAbsForm();renderSbAnalysts();render();
