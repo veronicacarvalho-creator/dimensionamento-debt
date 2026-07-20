@@ -569,33 +569,35 @@ function getCycleAssignment(cycleNum){
   const ns=(NON_MANAGERS.length>0)?((cycleNum*3)%NON_MANAGERS.length+NON_MANAGERS.length)%NON_MANAGERS.length:0;
   const nm=[...NON_MANAGERS.slice(ns),...NON_MANAGERS.slice(0,ns)];
  
-  return {
-    // Neg 2: 4 = 1 mgr + 3 nm
+  // Acesso seguro: se índice não existe retorna undefined → filtrado depois
+  const g=(arr,i)=>arr[i]||null; // null é removido pelos filtros downstream
+ 
+  const result={
     "Neg 2":[
-      {name:mgr[0],isMgr:true},
-      {name:nm[0],isMgr:false},
-      {name:nm[1],isMgr:false},
-      {name:nm[2],isMgr:false},
+      {name:g(mgr,0),isMgr:true},
+      {name:g(nm,0),isMgr:false},
+      {name:g(nm,1),isMgr:false},
+      {name:g(nm,2),isMgr:false},
     ],
-    // Neg 1: 6 = 1 focal + 1 focal em rotação (sem papel focal) + 4 nm
     "Neg 1":[
-      {name:mgr[1],isMgr:true},
-      {name:mgr[3],isMgr:false},  // focal em rotação — sem papel focal neste ciclo
-      {name:nm[3],isMgr:false},
-      {name:nm[4],isMgr:false},
-      {name:nm[5],isMgr:false},
-      {name:nm[6],isMgr:false},
+      {name:g(mgr,1),isMgr:true},
+      {name:g(mgr,3),isMgr:false}, // focal em rotação
+      {name:g(nm,3),isMgr:false},
+      {name:g(nm,4),isMgr:false},
+      {name:g(nm,5),isMgr:false},
+      {name:g(nm,6),isMgr:false},
     ],
-    // Proc 1: 5 = 1 focal + 4 nm
     "Proc 1":[
-      {name:mgr[2],isMgr:true},
-      {name:nm[7],isMgr:false},
-      {name:nm[8],isMgr:false},
-      {name:nm[9],isMgr:false},
-      {name:nm[10],isMgr:false},
+      {name:g(mgr,2),isMgr:true},
+      {name:g(nm,7),isMgr:false},
+      {name:g(nm,8),isMgr:false},
+      {name:g(nm,9),isMgr:false},
+      {name:g(nm,10),isMgr:false},
     ],
   };
-  // Total: 4+6+5 = 15 ✓ — focais: Neg2→mgr[0], Neg1→mgr[1], Proc1→mgr[2], Rotação→mgr[3] (analista em Neg1)
+  // Remove entradas com name null (equipe menor que o esperado)
+  BLOCKS.forEach(b=>{ result[b]=result[b].filter(p=>p.name!=null); });
+  return result;
 }
  
 function toKey(d){return d.toISOString().slice(0,10);}
@@ -891,9 +893,9 @@ function updateCicloInfo(date){
     const pa=PRE_CYCLE_ASSIGNMENT;
     document.getElementById('cicloInfo').innerHTML=
       `<strong>Pré-ciclo</strong><br>até 03/07/2026<br>
-      <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${pa['Neg 2'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-      <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${pa['Neg 1'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-      <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${pa['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
+      <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${pa['Neg 2'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}<br>
+      <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${pa['Neg 1'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}<br>
+      <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${pa['Proc 1'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}`;
     document.getElementById('cicloBadgeTop').textContent='Pré-ciclo · até 03/07/2026';
     return;
   }
@@ -902,9 +904,9 @@ function updateCicloInfo(date){
   const asgn=getCycleAssignment(cn);
   document.getElementById('cicloInfo').innerHTML=
     `<strong>Ciclo ${cn+1}</strong><br>${start?fmtFull(start):''} – ${end?fmtFull(end):''}<br>
-    <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${asgn['Neg 2'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-    <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${asgn['Neg 1'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-    <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
+    <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${asgn['Neg 2'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}<br>
+    <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${asgn['Neg 1'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}<br>
+    <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>(p.name||'').split(' ')[0]).filter(Boolean).join(', ')}`;
   document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
  
