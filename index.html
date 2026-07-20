@@ -560,11 +560,13 @@ function getCycleDates(cycleNum){
 }
  
 function getCycleAssignment(cycleNum){
-  // Focais: circular shift por ciclo
-  const ms=cycleNum%MANAGERS.length;
+  // Proteção: se MANAGERS ou NON_MANAGERS estiver vazio, usa o pré-ciclo como fallback
+  if(!MANAGERS.length||!NON_MANAGERS.length) return PRE_CYCLE_ASSIGNMENT;
+  // Módulo sempre positivo (evita NaN ou negativo)
+  const ms=((cycleNum%MANAGERS.length)+MANAGERS.length)%MANAGERS.length;
   const mgr=[...MANAGERS.slice(ms),...MANAGERS.slice(0,ms)];
-  // Analistas não-focales: circular shift por ciclo (passo 3)
-  const ns=(cycleNum*3)%NON_MANAGERS.length;
+  // Analistas não-focais: circular shift por ciclo (passo 3)
+  const ns=(NON_MANAGERS.length>0)?((cycleNum*3)%NON_MANAGERS.length+NON_MANAGERS.length)%NON_MANAGERS.length:0;
   const nm=[...NON_MANAGERS.slice(ns),...NON_MANAGERS.slice(0,ns)];
  
   return {
@@ -909,7 +911,9 @@ function updateCicloInfo(date){
 // Retorna atribuição efetiva por dia: focais fixos, analistas redistribuídos
 // priorizando o bloco com menos analistas disponíveis
 function getEffectiveAssignment(date){
+  try{
   const base=date<CYCLE_START?PRE_CYCLE_ASSIGNMENT:getCycleAssignment(getCycleNumber(date));
+  if(!base)return PRE_CYCLE_ASSIGNMENT;
  
   // Alvos: quantos não-focais por bloco no ciclo base
   const targets={};
@@ -949,9 +953,11 @@ function getEffectiveAssignment(date){
   });
   Object.entries(assigned).forEach(([name,b])=>result[b].push({name,isMgr:false}));
   return result;
+  }catch(err){console.error('getEffectiveAssignment error:',err);return PRE_CYCLE_ASSIGNMENT;}
 }
  
 function render(){
+  try{
   document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
   const days=getDays();
   const analysts=getFilteredAnalysts();
@@ -1089,6 +1095,11 @@ function render(){
   });
   h+=`</tr></tbody>`;
   tbl.innerHTML=h;
+  }catch(err){
+    console.error('render() error:',err);
+    const tbl2=document.getElementById('mainTable');
+    if(tbl2)tbl2.innerHTML=`<tr><td colspan="40" style="padding:1rem;color:#c0392b;text-align:center">⚠ Erro ao renderizar: ${err.message}<br><small>Abra o console (F12) para mais detalhes.</small></td></tr>`;
+  }
 }
  
 // ── STORAGE UNIFICADO ────────────────────────────────────────
@@ -1418,7 +1429,9 @@ async function saveTeam(){
 async function loadTeam(){
   try{
     const d = await storeGet('dim2026:team');
+    // Proteção: só aplica se tiver analistas E focais válidos
     if(!d || !d.analysts || !d.analysts.length) return;
+    if(!d.managers || !d.managers.length) return; // sem focais = dado inválido, mantém defaults
  
     // Restaura ANALYST_DATA completo (preserva id/email/name)
     ANALYST_DATA.length = 0;
@@ -1431,11 +1444,21 @@ async function loadTeam(){
     ANALYSTS.length = 0;
     ANALYST_DATA.forEach(a => ANALYSTS.push(a.name));
  
-    // Restaura MANAGERS e NON_MANAGERS
+    // Restaura MANAGERS (só focais que existem em ANALYSTS)
     MANAGERS.length = 0;
-    (d.managers || []).forEach(m => MANAGERS.push(m));
+    d.managers.filter(m => ANALYSTS.includes(m)).forEach(m => MANAGERS.push(m));
+ 
+    // Restaura NON_MANAGERS
     NON_MANAGERS.length = 0;
     ANALYSTS.filter(a => !MANAGERS.includes(a)).forEach(a => NON_MANAGERS.push(a));
+ 
+    // Proteção final: se algo deu errado, restaura defaults
+    if(!MANAGERS.length || !NON_MANAGERS.length){
+      console.warn('loadTeam: dados inválidos — restaurando equipe padrão');
+      ANALYSTS.length=0;TEAM_DEFAULT_ANALYSTS.forEach(a=>ANALYSTS.push(a));
+      MANAGERS.length=0;TEAM_DEFAULT_MANAGERS.forEach(m=>MANAGERS.push(m));
+      NON_MANAGERS.length=0;ANALYSTS.filter(a=>!MANAGERS.includes(a)).forEach(a=>NON_MANAGERS.push(a));
+    }
  
     // Sincroniza vars do drawer de equipe
     teamAnalysts = [...ANALYSTS];
@@ -1448,7 +1471,7 @@ async function loadTeam(){
       ANALYSTS.forEach(a => {const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});
     }
     initFerModal();
-  }catch(e){}
+  }catch(e){console.error('loadTeam error:',e);}
 }
  
 function teamReset(){
