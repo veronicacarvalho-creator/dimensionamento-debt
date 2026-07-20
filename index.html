@@ -519,7 +519,7 @@ let ANALYST_DATA=[
   {id:"rubya.paula",       email:"rubya.paula@nubank.com.br",       name:"Rubya D."},
   {id:"gabriel.miguel",    email:"gabriel.miguel@nubank.com.br",    name:"Gabriel S."},
   {id:"marilia.goncalves", email:"marilia.goncalves@nubank.com.br", name:"Marilia G."},
-  {id:"fabiane.sihel",     email:"fabiane.sihel@nubank.com.br",     name:"Fabiane S."},
+  {id:"andrea.n",           email:"",                                name:"Andrea N."},
   {id:"rianne.sousa",      email:"rianne.sousa@nubank.com.br",      name:"Rianne S."},
 ];
 const ANALYSTS=ANALYST_DATA.map(a=>a.name);
@@ -604,7 +604,7 @@ function fmt(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digi
 function fmtFull(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function parseDateInput(s){if(!s)return null;const[y,m,d]=s.split('-');return new Date(+y,+m-1,+d);}
  
-const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marilia G.","fabiane.sihel":"Fabiane S.","rianne.sousa":"Rianne S."};
+const NAME_VARIANTS={"aline.machado":"Aline M.","adriana.rodrigues":"Adriana R.","almir.goncalves":"Almir G.","camila.nascimento":"Camila N.","camilla.thome":"Camilla T.","elaine.cunico":"Elaine C.","mara.fukui":"Maraisa F.","paolla.esteves":"Paolla S.","sophia.pereira":"Sophia M.","jose.nilzo":"José N.","rubya.paula":"Rubya D.","gabriel.miguel":"Gabriel S.","marilia.goncalves":"Marilia G.","andrea.n":"Andrea N.","rianne.sousa":"Rianne S."};
  
 // Dimensionamento fixo pré-ciclo (até 03/07/2026), baseado no atual da planilha
 const PRE_CYCLE_ASSIGNMENT={
@@ -614,7 +614,7 @@ const PRE_CYCLE_ASSIGNMENT={
     {name:"Adriana R.",isMgr:false},
     {name:"Elaine C.", isMgr:false},
     {name:"Paolla S.", isMgr:false},
-    {name:"Fabiane S.",isMgr:false},
+    {name:"Andrea N.", isMgr:false},
   ],
   "Neg 2":[
     {name:"Sophia M.", isMgr:true},
@@ -671,7 +671,7 @@ const BASE_ABS=[
   ["rianne.sousa","Férias","06/04/2026","21/04/2026"],
   ["rianne.sousa","Férias","22/06/2026","26/06/2026"],
   ["marilia.goncalves","Férias","08/09/2026","12/09/2026"],
-  ["fabiane.sihel","Férias","20/05/2026","30/05/2026"],
+  // fabiane.sihel removida da equipe
 ];
 function parseBR(s){if(!s)return null;const[d,m,y]=s.split('/');return new Date(+y,+m-1,+d);}
 let baseAbsences=BASE_ABS.map(([k,t,s,e],i)=>({id:'base-'+i,name:NAME_VARIANTS[k],type:t,start:parseBR(s),end:parseBR(e),source:'base'})).filter(a=>a.start&&ANALYSTS.includes(a.name));
@@ -1488,14 +1488,14 @@ const M1_MAP={
   "Camila N.":"Veronica C.","Camilla T.":"Veronica C.","Elaine C.":"Veronica C.",
   "Maraisa F.":"Thais M.","Paolla S.":"Thais M.","Sophia M.":"Veronica C.",
   "José N.":"Veronica C.","Rubya D.":"Veronica C.","Gabriel S.":"Thais M.",
-  "Marilia G.":"Veronica C.","Fabiane S.":"Thais M.","Rianne S.":"Veronica C."
+  "Marilia G.":"Veronica C.","Andrea N.":"Thais M.","Rianne S.":"Veronica C."
 };
 const VAC_LIMIT_RAW={
   "Aline M.":"2027-02-19","Adriana R.":"2026-05-16","Almir G.":"2026-03-05",
   "Camila N.":"2026-08-09","Camilla T.":"2026-03-05","Elaine C.":"2026-11-14",
   "Maraisa F.":"2026-03-05","Paolla S.":"2026-12-19","Sophia M.":"2026-10-17",
   "José N.":"2026-07-10","Rubya D.":"2026-05-17","Gabriel S.":"2026-03-09",
-  "Marilia G.":"2026-09-03","Fabiane S.":null,"Rianne S.":"2026-04-06"
+  "Marilia G.":"2026-09-03","Andrea N.":null,"Rianne S.":"2026-04-06"
 };
 // Limites editáveis pelas gestoras (sobrepõem VAC_LIMIT_RAW)
 let vacLimits={};
