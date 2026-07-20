@@ -530,7 +530,7 @@ const BLOCKS=["Neg 2","Neg 1","Proc 1"];
 //  CONFIGURAÇÃO DA API — preencha antes de publicar no GitHub
 //  Cole aqui a URL do seu Google Apps Script
 // ════════════════════════════════════════════════════════════════
-const DEFAULT_GAS_URL ='https://script.google.com/macros/s/AKfycbwB6LMwstGIJ-56QEwEOH0ilhWEHfjswR-g8xPhfgCk2VhrcGToCfWQdjXeSiu830PQ/exec'
+const DEFAULT_GAS_URL = ''; // ← Cole a URL aqui
 // Focais(4): mgr[0]→Neg2, mgr[1]→Neg1(focal), mgr[2]→Proc1, mgr[3]→Neg1(rotação, sem focal)
 // Analistas(11): nm[0..2]→Neg2(3), nm[3..6]→Neg1(4), nm[7..10]→Proc1(4)
  
@@ -1112,9 +1112,15 @@ async function storeSet(key,value){
   if(GAS_URL){
     updateApiStatus('sync');
     try{
-      const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({key,value:data})});
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),8000); // timeout 8s
+      const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({key,value:data}),signal:ctrl.signal});
+      clearTimeout(timer);
       if(r.ok){updateApiStatus('ok');return;}
-    }catch(e){updateApiStatus('err');}
+    }catch(e){
+      updateApiStatus('err');
+      console.warn('Erro ao salvar na API — salvando localmente:', e.message);
+    }
   }
   try{if(window.storage){await window.storage.set(key,data,true);return;}}catch(e){}
   try{localStorage.setItem(key,data);}catch(e){}
@@ -1123,9 +1129,15 @@ async function storeSet(key,value){
 async function storeGet(key){
   if(GAS_URL){
     try{
-      const r=await fetch(`${GAS_URL}?action=get&key=${encodeURIComponent(key)}&_=${Date.now()}`);
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),5000); // timeout 5s
+      const r=await fetch(`${GAS_URL}?action=get&key=${encodeURIComponent(key)}&_=${Date.now()}`,{signal:ctrl.signal});
+      clearTimeout(timer);
       if(r.ok){const j=await r.json();if(j.ok&&j.value!=null)return JSON.parse(j.value);if(j.ok)return null;}
-    }catch(e){}
+    }catch(e){
+      if(e.name==='AbortError') console.warn('API timeout — carregando sem dados da API');
+      else console.warn('API indisponível — carregando sem dados da API:', e.message);
+    }
   }
   try{if(window.storage){const r=await window.storage.get(key,true);if(r&&r.value)return JSON.parse(r.value);}}catch(e){}
   try{const v=localStorage.getItem(key);if(v)return JSON.parse(v);}catch(e){}
@@ -1227,8 +1239,10 @@ function saveGasUrl(){
   }
 }
  
+// Renderiza imediatamente — não espera a API
 initAbsForm();renderSbAnalysts();render();
-loadShared();
+// Sincroniza com a API em segundo plano (não bloqueia a interface)
+setTimeout(()=>loadShared(),100);
  
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
