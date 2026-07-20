@@ -537,26 +537,43 @@ const DEFAULT_GAS_URL = ''; // ← Cole a URL aqui
 const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WD_SHORT=['D','S','T','Q','Q','S','S'];
 const WD_FULL=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const CYCLE_START=new Date(2026,6,7); // Terça-feira 07/07/2026 — rotações semanais
-const CYCLE_DAYS=7; // ciclo semanal: terça → segunda
+const CYCLE_START=new Date(2026,6,7); // Terça-feira 07/07/2026 — início das rotações
  
-// Rotações semanais: novo ciclo toda terça-feira
+// Ciclos de 15 dias corridos que começam sempre na terça-feira:
+// a cada ciclo, avançamos 15 dias corridos e movemos para a próxima terça.
 function dayDiff(a,b){
   return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/86400000);
 }
+ 
+// Pré-computa as datas de início de cada ciclo (próxima terça após 15 dias corridos)
+const CYCLE_STARTS=(()=>{
+  const arr=[new Date(2026,6,7)]; // Ter 07/07/2026
+  for(let i=0;i<150;i++){
+    const prev=arr[arr.length-1];
+    const d=new Date(prev);
+    d.setDate(d.getDate()+15); // avança 15 dias corridos
+    while(d.getDay()!==2) d.setDate(d.getDate()+1); // avança até próxima terça
+    arr.push(new Date(d));
+  }
+  return arr;
+})();
+ 
 function getCycleNumber(date){
-  const diff=dayDiff(CYCLE_START,date);
-  if(diff<0) return -1;
-  return Math.floor(diff/7);
+  if(date<CYCLE_STARTS[0]) return -1;
+  for(let i=CYCLE_STARTS.length-1;i>=0;i--){
+    if(date>=CYCLE_STARTS[i]) return i;
+  }
+  return -1;
 }
 function isCycleStart(date){
-  if(date<CYCLE_START) return false;
-  return date.getDay()===2; // terça-feira
+  if(date.getDay()!==2) return false; // só terças
+  const dk=date.toISOString().slice(0,10);
+  return CYCLE_STARTS.some(s=>s.toISOString().slice(0,10)===dk);
 }
 function getCycleDates(cycleNum){
-  const cs=new Date(CYCLE_START.getFullYear(),CYCLE_START.getMonth(),CYCLE_START.getDate()+cycleNum*7);
-  const ce=new Date(cs);
-  ce.setDate(ce.getDate()+6);
+  const cs=CYCLE_STARTS[cycleNum]||CYCLE_STARTS[CYCLE_STARTS.length-1];
+  const next=CYCLE_STARTS[cycleNum+1];
+  const ce=next?new Date(next.getTime()-86400000):new Date(cs.getTime()+20*86400000);
   return{start:cs,end:ce};
 }
  
@@ -846,10 +863,11 @@ function buildWeekBtns(){
 function buildCicloBtns(){
   const mS=new Date(curY,curM,1),mE=new Date(curY,curM+1,0);
   let btns='';
-  for(let c=0;c<120;c++){
-    const{start,end}=getCycleDates(c);if(!start||!end)break;
+  for(let c=0;c<CYCLE_STARTS.length-1;c++){
+    const{start,end}=getCycleDates(c);
+    if(!start||!end)break;
     if(end<mS||start>mE)continue;
-    btns+=`<button class="wk-btn${c===curWk?' active':''}" onclick="selectCiclo(${c})">Ciclo ${c+1} · ${fmt(start)}–${fmt(end)}</button>`;
+    btns+=`<button class="wk-btn${c===curWk?' active':''}" onclick="selectCiclo(${c})">C${c+1} · Ter ${fmt(start)}→Seg ${fmt(end)}</button>`;
   }
   document.getElementById('weekBtns').innerHTML=btns||'<span style="font-size:11px;color:#8880b8">Sem ciclos neste mês</span>';
 }
