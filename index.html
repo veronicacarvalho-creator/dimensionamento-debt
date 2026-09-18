@@ -600,7 +600,7 @@ function hasAbsInMonth(name,y,m){
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
 
 // STATE
-let curY=2026,curM=4,curView='mes',curWk=0;
+let curY=new Date().getFullYear(),curM=new Date().getMonth(),curView='mes',curWk=0;
 let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVal='',highlighted=new Set();
 let editMode=false;
 const overrides={};
@@ -735,7 +735,16 @@ function setView(v){
   else wb.style.display='none';
   render();
 }
-function changeMonth(dir){curM+=dir;if(curM>11){curM=0;curY++;}if(curM<0){curM=11;curY--;}curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();}
+function changeMonth(dir){
+  const now=new Date();
+  const minY=now.getFullYear(),minM=now.getMonth();
+  curM+=dir;
+  if(curM>11){curM=0;curY++;}
+  if(curM<0){curM=11;curY--;}
+  // Não permite ir para meses anteriores ao atual
+  if(curY<minY||(curY===minY&&curM<minM)){curY=minY;curM=minM;}
+  curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();
+}
 function changeWeek(i){curWk=i;buildWeekBtns();render();}
 function buildWeekBtns(){
   const wks=getWeeks(curY,curM);
