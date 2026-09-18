@@ -593,8 +593,8 @@ function allAbs(){return[...baseAbsences,...manualAbsences];}
 function getAbsInfo(name,date){const dk=toKey(date);return allAbs().find(a=>a.name===name&&toKey(a.start)<=dk&&toKey(a.end)>=dk)||null;}
 function isAbsent(name,date){return!!getAbsInfo(name,date);}
 function hasAbsInMonth(name,y,m){
-  const s=`${y}-${String(m+1).padStart(2,'0')}-01`;
-  const e=`${y}-${String(m+1).padStart(2,'0')}-${new Date(y,m+1,0).getDate()}`;
+  const s=(y) + '-' + (String(m+1).padStart(2,'0')) + '-01';
+  const e=(y) + '-' + (String(m+1).padStart(2,'0')) + '-' + (new Date(y,m+1,0).getDate());
   return allAbs().some(a=>a.name===name&&toKey(a.start)<=e&&toKey(a.end)>=s);
 }
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
@@ -625,7 +625,7 @@ function addAbsence(){
   if(!s||!e||s>e){showToast('⚠ Datas inválidas');return;}
   manualAbsences.push({name,type,start:s,end:e,source:'manual',id:Date.now()});
   renderAbsList();renderSbAnalysts();render();
-  showToast(`✓ ${name} · ${type} · ${fmt(s)}${toKey(s)!==toKey(e)?' – '+fmt(e):''}`);
+  showToast('✓ ' + (name) + ' · ' + (type) + ' · ' + (fmt(s)) + (toKey(s)!==toKey(e)?' – '+fmt(e):''));
   clearAbsForm();
 }
 function removeManualAbs(id){manualAbsences=manualAbsences.filter(a=>a.id!==id);renderAbsList();renderSbAnalysts();render();showToast('Ausência removida — dimensionamento atualizado');}
@@ -634,8 +634,8 @@ function renderAbsList(){
   if(!manualAbsences.length){el.innerHTML='';return;}
   const bg={'Férias':'#cc8800','Day off':'#3a8a3a','Lic. Médica':'#cc3333'};
   el.innerHTML=manualAbsences.map(a=>{
-    const r=toKey(a.start)===toKey(a.end)?fmt(a.start):`${fmt(a.start)}–${fmt(a.end)}`;
-    return `<div class="abs-item"><span class="abs-item-type" style="background:${bg[a.type]||'#888'}">${a.type==='Day off'?'DO':a.type==='Férias'?'Fér':'Lic'}</span><span class="abs-item-name">${a.name} · ${r}</span><button class="abs-del" onclick="removeManualAbs(${a.id})">✕</button></div>`;
+    const r=toKey(a.start)===toKey(a.end)?fmt(a.start):(fmt(a.start)) + '–' + (fmt(a.end));
+    return '<div class="abs-item"><span class="abs-item-type" style="background:' + (bg[a.type]||'#888') + '">' + (a.type==='Day off'?'DO':a.type==='Férias'?'Fér':'Lic') + '</span><span class="abs-item-name">' + (a.name) + ' · ' + (r) + '</span><button class="abs-del" onclick="removeManualAbs(' + (a.id) + ')">✕</button></div>';
   }).join('');
 }
 
@@ -659,7 +659,7 @@ async function syncSheet(){
     });
     renderAbsList();renderSbAnalysts();render();
     btn.textContent='✓ Sincronizado!';btn.classList.remove('syncing');
-    showToast(`✓ ${added} importada(s), ${skipped} ignorada(s)`);
+    showToast('✓ ' + (added) + ' importada(s), ' + (skipped) + ' ignorada(s)');
     setTimeout(()=>{btn.textContent='🔄 Sincronizar agora';},3000);
   }catch(e){
     btn.classList.remove('syncing');btn.classList.add('error');btn.textContent='✕ Erro';
@@ -703,26 +703,23 @@ function renderSbAnalysts(){
   document.getElementById('sbAnalysts').innerHTML=list.map(name=>{
     const isMgr=MANAGERS.includes(name),hasAbs=hasAbsInMonth(name,curY,curM),sel=highlighted.has(name);
     const blk=blockOf[name];
-    const btag=blk?`<span style="font-size:9px;padding:1px 4px;border-radius:4px;background:${blkColor[blk]||'#555'};color:#fff;margin-left:auto;flex-shrink:0">${blk}</span>`:'';
-    return `<div class="sb-analyst${sel?' selected':''}" onclick="toggleHighlight('${name}')">
-      <span style="width:6px;height:6px;border-radius:50%;background:${isMgr?'#5a9adc':hasAbs?'#cc8800':'#b5aee0'};flex-shrink:0;display:inline-block"></span>
-      <span class="sb-analyst-name">${name}${isMgr?' ⬥':''}</span>${btag}
-    </div>`;
+    const btag=blk?'<span style="font-size:9px;padding:1px 4px;border-radius:4px;background:' + (blkColor[blk]||'#555') + ';color:#fff;margin-left:auto;flex-shrink:0">' + (blk) + '</span>':'';
+    return '<div class="sb-analyst' + (sel?' selected':'') + '" onclick="toggleHighlight(\'' + (name) + '\')">\n      <span style="width:6px;height:6px;border-radius:50%;background:' + (isMgr?'#5a9adc':hasAbs?'#cc8800':'#b5aee0') + ';flex-shrink:0;display:inline-block"></span>\n      <span class="sb-analyst-name">' + (name) + (isMgr?' ⬥':'') + '</span>' + (btag) + '\n    </div>';
   }).join('');
 }
 
 function toggleEditMode(){editMode=!editMode;document.getElementById('editToggle').classList.toggle('on',editMode);document.getElementById('editToggle').textContent=editMode?'✎ Editando...':'✎ Editar';document.getElementById('editBadge').style.display=editMode?'inline-flex':'none';render();if(editMode)showToast('Modo edição ativo — clique em qualquer célula');}
-function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=`${name} · ${fmt(dateObj)}`;menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
+function openCtx(e,name,dateObj,current){e.preventDefault();e.stopPropagation();if(!editMode)return;ctxName=name;ctxDate=dateObj;ctxCurrent=current;const menu=document.getElementById('ctxMenu');document.getElementById('ctxTitle').textContent=(name) + ' · ' + (fmt(dateObj));menu.querySelectorAll('.ctx-item').forEach(i=>i.classList.remove('active-item'));if(current)menu.querySelectorAll('.ctx-item').forEach(i=>{if(i.textContent.trim()===current)i.classList.add('active-item');});menu.style.display='block';menu.style.left=Math.min(e.clientX,window.innerWidth-185)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-270)+'px';}
 function closeCtx(){document.getElementById('ctxMenu').style.display='none';}
-function applyOverride(val){if(!ctxName||!ctxDate)return;overrides[`${ctxName}|${toKey(ctxDate)}`]=val;closeCtx();renderEditList();render();showToast(`✎ ${ctxName} → ${val} em ${fmt(ctxDate)}`);}
-function removeOverride(){delete overrides[`${ctxName}|${toKey(ctxDate)}`];closeCtx();renderEditList();render();showToast('Edição removida');}
+function applyOverride(val){if(!ctxName||!ctxDate)return;overrides[(ctxName) + '|' + (toKey(ctxDate))]=val;closeCtx();renderEditList();render();showToast('✎ ' + (ctxName) + ' → ' + (val) + ' em ' + (fmt(ctxDate)));}
+function removeOverride(){delete overrides[(ctxName) + '|' + (toKey(ctxDate))];closeCtx();renderEditList();render();showToast('Edição removida');}
 function removeOverrideKey(k){delete overrides[k];renderEditList();render();}
 function clearOverrides(){if(!Object.keys(overrides).length)return;if(!confirm('Remover todas as edições manuais?'))return;Object.keys(overrides).forEach(k=>delete overrides[k]);renderEditList();render();}
 function renderEditList(){
   const el=document.getElementById('editList');const keys=Object.keys(overrides);
   if(!keys.length){el.innerHTML='<span style="font-size:11px;color:#8880b8">Nenhuma edição.</span>';return;}
   const bgMap={'Neg 1':'#6a3fa0','Neg 2':'#1a6a6a','Proc 1':'#1a4a8a','Férias':'#cc8800','Day off':'#3a8a3a','Lic. Médica':'#cc3333'};
-  el.innerHTML=keys.map(k=>{const[name,dk]=k.split('|');const val=overrides[k];return `<div class="edit-item"><span class="edit-badge-sb" style="background:${bgMap[val]||'#888'}">${val}</span><span style="flex:1;font-size:10px">${name}<br><span style="opacity:.6">${dk.slice(5).replace('-','/')}</span></span><button class="edit-del" onclick="removeOverrideKey('${k}')">✕</button></div>`;}).join('');
+  el.innerHTML=keys.map(k=>{const[name,dk]=k.split('|');const val=overrides[k];return '<div class="edit-item"><span class="edit-badge-sb" style="background:' + (bgMap[val]||'#888') + '">' + (val) + '</span><span style="flex:1;font-size:10px">' + (name) + '<br><span style="opacity:.6">' + (dk.slice(5).replace('-','/')) + '</span></span><button class="edit-del" onclick="removeOverrideKey(\'' + (k) + '\')">✕</button></div>';}).join('');
 }
 document.addEventListener('click',e=>{if(!document.getElementById('ctxMenu').contains(e.target))closeCtx();});
 
@@ -748,7 +745,7 @@ function changeMonth(dir){
 function changeWeek(i){curWk=i;buildWeekBtns();render();}
 function buildWeekBtns(){
   const wks=getWeeks(curY,curM);
-  document.getElementById('weekBtns').innerHTML=wks.map((wk,i)=>{const wd=wk.filter(d=>!isWeekend(d));return`<button class="wk-btn${i===curWk?' active':''}" onclick="changeWeek(${i})">Sem ${i+1}${wd.length?' · '+fmt(wd[0])+(wd.length>1?' – '+fmt(wd[wd.length-1]):''):''}</button>`;}).join('');
+  document.getElementById('weekBtns').innerHTML=wks.map((wk,i)=>{const wd=wk.filter(d=>!isWeekend(d));return'<button class="wk-btn' + (i===curWk?' active':'') + '" onclick="changeWeek(' + (i) + ')">Sem ' + (i+1) + (wd.length?' · '+fmt(wd[0])+(wd.length>1?' – '+fmt(wd[wd.length-1]):''):'') + '</button>';}).join('');
 }
 function buildCicloBtns(){
   const mS=new Date(curY,curM,1),mE=new Date(curY,curM+1,0);
@@ -756,7 +753,7 @@ function buildCicloBtns(){
   for(let c=0;c<120;c++){
     const{start,end}=getCycleDates(c);if(!start||!end)break;
     if(end<mS||start>mE)continue;
-    btns+=`<button class="wk-btn${c===curWk?' active':''}" onclick="selectCiclo(${c})">Ciclo ${c+1} · ${fmt(start)}–${fmt(end)}</button>`;
+    btns+='<button class="wk-btn' + (c===curWk?' active':'') + '" onclick="selectCiclo(' + (c) + ')">Ciclo ' + (c+1) + ' · ' + (fmt(start)) + '–' + (fmt(end)) + '</button>';
   }
   document.getElementById('weekBtns').innerHTML=btns||'<span style="font-size:11px;color:#8880b8">Sem ciclos neste mês</span>';
 }
@@ -773,14 +770,14 @@ function showTip(e,name,date,block,cycleNum){
   const abs=getAbsInfo(name,date);
   const isMgr=MANAGERS.includes(name);
   const beforeStart=date<CYCLE_START;
-  let h=`<strong>${name}</strong>${isMgr?' ⬥':''}<br>${WD_FULL[date.getDay()]} ${fmt(date)}`;
-  if(beforeStart) h+=`<br><span style="opacity:.7">Antes do início do dimensionamento</span>`;
+  let h='<strong>' + (name) + '</strong>' + (isMgr?' ⬥':'') + '<br>' + (WD_FULL[date.getDay()]) + ' ' + (fmt(date));
+  if(beforeStart) h+='<br><span style="opacity:.7">Antes do início do dimensionamento</span>';
   else{
-    h+=`<br>Ciclo ${cycleNum+1}`;
-    if(abs){h+=`<br>Ausência: <strong>${abs.type}</strong>`;if(block)h+=`<br><span style="opacity:.7;font-size:10px">Bloco mantido: ${block}</span>`;}
-    else if(block) h+=`<br>Bloco: <strong>${block}</strong>`;
+    h+='<br>Ciclo ' + (cycleNum+1);
+    if(abs){h+='<br>Ausência: <strong>' + (abs.type) + '</strong>';if(block)h+='<br><span style="opacity:.7;font-size:10px">Bloco mantido: ' + (block) + '</span>';}
+    else if(block) h+='<br>Bloco: <strong>' + (block) + '</strong>';
   }
-  if(editMode) h+=`<br><span style="opacity:.7;font-size:10px">Clique para editar</span>`;
+  if(editMode) h+='<br><span style="opacity:.7;font-size:10px">Clique para editar</span>';
   tip.innerHTML=h;tip.style.display='block';
   tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY-8)+'px';
 }
@@ -788,44 +785,57 @@ function hideTip(){document.getElementById('tooltip').style.display='none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
 
 function updateCicloInfo(date){
-  const beforeStart=date<CYCLE_START;
-  if(beforeStart){
-    document.getElementById('cicloInfo').innerHTML=`<strong>Aguardando início</strong><br>Dimensionamento começa em<br><strong>06/07/2026</strong>`;
-    document.getElementById('cicloBadgeTop').textContent='Início: 06/07/2026';
-    return;
+  try {
+    const beforeStart=date<CYCLE_START;
+    if(beforeStart){
+      document.getElementById('cicloInfo').innerHTML='<strong>Aguardando in&#237;cio</strong><br>Dimensionamento come&#231;a em<br><strong>06/07/2026</strong>';
+      document.getElementById('cicloBadgeTop').textContent='In&#237;cio: 06/07/2026';
+      return;
+    }
+    const cn=getCycleNumber(date);
+    const dates=getCycleDates(cn);
+    const asgn=getAssignment(date,cn);
+    const n2=(asgn['Neg 2']||[]).map(function(p){return p.name.split(' ')[0];}).join(', ');
+    const n1=(asgn['Neg 1']||[]).map(function(p){return p.name.split(' ')[0];}).join(', ');
+    const p1=(asgn['Proc 1']||[]).map(function(p){return p.name.split(' ')[0];}).join(', ');
+    const period=dates.start&&dates.end?fmtFull(dates.start)+' &#8211; '+fmtFull(dates.end):'em andamento';
+    document.getElementById('cicloInfo').innerHTML=
+      '<strong>Ciclo '+(cn+1)+'</strong><br>'+period+'<br>'+
+      '<span style="color:#1a6a6a">&#9679;</span> <b>Neg 2:</b> '+n2+'<br>'+
+      '<span style="color:#6a3fa0">&#9679;</span> <b>Neg 1:</b> '+n1+'<br>'+
+      '<span style="color:#1a4a8a">&#9679;</span> <b>Proc 1:</b> '+p1;
+    document.getElementById('cicloBadgeTop').textContent='Ciclo '+(cn+1)+(dates.start?' &#183; '+fmt(dates.start)+'&#8211;'+fmt(dates.end):'');
+  } catch(e) {
+    console.error('updateCicloInfo error:', e);
   }
-  const cn=getCycleNumber(date);
-  const{start,end}=getCycleDates(cn);
-  const asgn=getAssignment(date,cn);
-  document.getElementById('cicloInfo').innerHTML=
-    `<strong>Ciclo ${cn+1}</strong><br>${start?fmtFull(start):''} – ${end?fmtFull(end):''}<br>
-    <span style="color:#1a6a6a">●</span> <b>Neg 2(4):</b> ${asgn['Neg 2'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-    <span style="color:#6a3fa0">●</span> <b>Neg 1(6):</b> ${asgn['Neg 1'].map(p=>p.name.split(' ')[0]).join(', ')}<br>
-    <span style="color:#1a4a8a">●</span> <b>Proc 1(5):</b> ${asgn['Proc 1'].map(p=>p.name.split(' ')[0]).join(', ')}`;
-  document.getElementById('cicloBadgeTop').textContent=`Ciclo ${cn+1} · ${start?fmt(start):''}–${end?fmt(end):''}`;
 }
 
 function render(){
-  document.getElementById('monthLabel').textContent=`${MONTHS_PT[curM]} ${curY}`;
+  document.getElementById('monthLabel').textContent=(MONTHS_PT[curM]) + ' ' + (curY);
   const days=getDays();
   const analysts=getFilteredAnalysts();
   const today=toKey(new Date());
   const tbl=document.getElementById('mainTable');
+  // Fallback: se days vazio, força visão mensal do mês atual
+  if(!days.length){
+    curView='mes';
+    document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+    const mb=document.getElementById('btnMes');if(mb)mb.classList.add('active');
+    render();return;
+  }
   const refDate=days.find(d=>!isWeekend(d))||new Date(curY,curM,18);
   updateCicloInfo(refDate);
-  if(!analysts.length){tbl.innerHTML=`<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>`;return;}
+  if(!analysts.length){tbl.innerHTML='<tr><td colspan="40"><div style="padding:2rem;text-align:center;font-size:13px;color:#8880b8">Nenhum analista encontrado.</div></td></tr>';return;}
 
-  const sub=curView==='semana'?` · Sem ${curWk+1}`:curView==='ciclo'?` · Ciclo ${curWk+1}`:'';
-  let h=`<thead><tr><td class="hdr-analistas">Analistas (${analysts.length})</td><td class="hdr-blocos" colspan="${days.length}">Blocos de tratativa — ${MONTHS_PT[curM]} ${curY}${sub}${editMode?' ✎':''}</td></tr>`;
-  h+=`<tr><td class="hdr-analistas" style="font-size:10px;opacity:.7">Nome · ciclo atual</td>`;
+  const sub=curView==='semana'?' · Sem ' + (curWk+1):curView==='ciclo'?' · Ciclo ' + (curWk+1):'';
+  let h='<thead><tr><td class="hdr-analistas">Analistas (' + (analysts.length) + ')</td><td class="hdr-blocos" colspan="' + (days.length) + '">Blocos de tratativa — ' + (MONTHS_PT[curM]) + ' ' + (curY) + (sub) + (editMode?' ✎':'') + '</td></tr>';
+  h+='<tr><td class="hdr-analistas" style="font-size:10px;opacity:.7">Nome · ciclo atual</td>';
   days.forEach(d=>{
     const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
     const cn=cs?getCycleNumber(d):-1;
-    h+=`<td class="hdr-dia${wk?' wknd':''}${tod?' today-h':''}${cs?' ciclo-start':''}" title="${cs?`↺ Início Ciclo ${cn+1}`:''}">
-      ${d.getDate()}${cs?`<br><span style="font-size:8px;color:#00dd00;font-weight:700">↺C${cn+1}</span>`:`<br><span style="font-size:9px;opacity:.7">${WD_SHORT[d.getDay()]}</span>`}
-    </td>`;
+    h+='<td class="hdr-dia' + (wk?' wknd':'') + (tod?' today-h':'') + (cs?' ciclo-start':'') + '" title="${cs?'↺ Início Ciclo ${cn+1}':\'\'}">\n      ' + (d.getDate()) + '${cs?'<br><span style="font-size:8px;color:#00dd00;font-weight:700">↺C${cn+1}</span>':'<br><span style="font-size:9px;opacity:.7">${WD_SHORT[d.getDay()]}</span>'}\n    </td>';
   });
-  h+=`</tr></thead><tbody>`;
+  h+='</tr></thead><tbody>';
 
   analysts.forEach(name=>{
     const isMgr=MANAGERS.includes(name);
@@ -842,18 +852,14 @@ function render(){
     const tagBg=beforeStart?'#555':rbColor;
     const tagLabel=beforeStart?'—':refBlock;
 
-    h+=`<tr>
-      <td class="nome-cell${isMgr?' mgr':''}" onclick="toggleHighlight('${name}')">
-        ${name}${isMgr?' ⬥':''}
-        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${tagBg};color:#fff;margin-left:4px;flex-shrink:0">${tagLabel}</span>
-      </td>`;
+    h+='<tr>\n      <td class="nome-cell' + (isMgr?' mgr':'') + '" onclick="toggleHighlight(\'' + (name) + '\')">\n        ' + (name) + (isMgr?' ⬥':'') + '\n        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:' + (tagBg) + ';color:#fff;margin-left:4px;flex-shrink:0">' + (tagLabel) + '</span>\n      </td>';
 
     days.forEach(d=>{
       const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
-      if(wk){h+=`<td class="day-cell wknd${cs?' ciclo-start':''}"></td>`;return;}
+      if(wk){h+='<td class="day-cell wknd' + (cs?' ciclo-start':'') + '"></td>';return;}
       const dk=toKey(d);
       const beforeStart=d<CYCLE_START;
-      const ovKey=`${name}|${dk}`;
+      const ovKey=(name) + '|' + (dk);
       const hasOv=overrides.hasOwnProperty(ovKey);
       const abs=getAbsInfo(name,d);
       const cn=beforeStart?0:getCycleNumber(d);
@@ -865,51 +871,48 @@ function render(){
       if(hasOv){
         current=overrides[ovKey];
         const oc=current==='Neg 1'?'neg1':current==='Neg 2'?'neg2':current==='Proc 1'?'proc1':current==='Férias'?'ferias':current==='Day off'?'dayoff':'medica';
-        cell=`<span class="pill p-${oc}">${current}</span><span class="manual-dot"></span>`;
+        cell='<span class="pill p-' + (oc) + '">' + (current) + '</span><span class="manual-dot"></span>';
       } else if(beforeStart){
-        cell=`<span style="font-size:9px;color:#8880b8">—</span>`;
+        cell='<span style="font-size:9px;color:#8880b8">—</span>';
       } else if(abs){
         current=abs.type;
         const isNew=abs.source!=='base';
         const ac=abs.type==='Férias'?'ferias':abs.type==='Day off'?'dayoff':'medica';
-        cell=`<span class="pill p-${ac}">${abs.type}</span>${isNew?'<span class="new-abs-dot"></span>':''}`;
-        if(block) cell+=`<br><span style="font-size:9px;opacity:.45;font-style:italic">${block}</span>`;
+        cell='<span class="pill p-' + (ac) + '">' + (abs.type) + '</span>' + (isNew?'<span class="new-abs-dot"></span>':'');
+        if(block) cell+='<br><span style="font-size:9px;opacity:.45;font-style:italic">' + (block) + '</span>';
       } else if(block&&blockFilters.has(block)){
         current=block;
         const bc=block==='Neg 1'?'neg1':block==='Neg 2'?'neg2':'proc1';
-        cell=`<span class="pill p-${bc}">${block}</span>`;
+        cell='<span class="pill p-' + (bc) + '">' + (block) + '</span>';
       }
 
       const ne=name.replace(/'/g,"\\'");
-      h+=`<td class="day-cell${tod?' today-col':''}${cs?' ciclo-start':''}${hasOv?' overridden':''}${editMode&&!beforeStart?' editable':''}"
-        onclick="${editMode&&!beforeStart?`openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')`:''}"
-        onmouseenter="showTip(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${block||current||''}',${cn})"
-        onmouseleave="hideTip()">${cell}</td>`;
+      h+='<td class="day-cell' + (tod?' today-col':'') + (cs?' ciclo-start':'') + (hasOv?' overridden':'') + (editMode&&!beforeStart?' editable':'') + '"\n        onclick="${editMode&&!beforeStart?'openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')':\'\'}"\n        onmouseenter="showTip(event,\'' + (ne) + '\',new Date(' + (d.getFullYear()) + ',' + (d.getMonth()) + ',' + (d.getDate()) + '),\'' + (block||current||'') + '\',' + (cn) + ')"\n        onmouseleave="hideTip()">' + (cell) + '</td>';
     });
-    h+=`</tr>`;
+    h+='</tr>';
   });
 
-  h+=`<tr><td colspan="${days.length+1}" style="height:5px;background:#ede9f8"></td></tr>`;
-  h+=`<tr class="ctrl-row"><td class="ctrl-nome">Disponíveis</td>`;
+  h+='<tr><td colspan="' + (days.length+1) + '" style="height:5px;background:#ede9f8"></td></tr>';
+  h+='<tr class="ctrl-row"><td class="ctrl-nome">Disponíveis</td>';
   days.forEach(d=>{
-    if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
+    if(isWeekend(d)){h+='<td style="background:#b5aee0;color:#555">—</td>';return;}
     const cs=isCycleStart(d);
-    if(d<CYCLE_START){h+=`<td class="${cs?'ciclo-start':''}" style="color:#555">—</td>`;return;}
+    if(d<CYCLE_START){h+='<td class="' + (cs?'ciclo-start':'') + '" style="color:#555">—</td>';return;}
     const aus=ANALYSTS.filter(a=>isAbsent(a,d)).length;
     const av=ANALYSTS.length-aus;
     const col=aus>=4?'#ff6b6b':aus>=2?'#ffb347':'#7adb78';
-    h+=`<td style="color:${col}" class="${cs?'ciclo-start':''}">${av}<span style="font-size:8px;opacity:.6;display:block">-${aus}</span></td>`;
+    h+='<td style="color:' + (col) + '" class="' + (cs?'ciclo-start':'') + '">' + (av) + '<span style="font-size:8px;opacity:.6;display:block">-' + (aus) + '</span></td>';
   });
-  h+=`</tr><tr class="ctrl-row"><td class="ctrl-nome">Focais ok</td>`;
+  h+='</tr><tr class="ctrl-row"><td class="ctrl-nome">Focais ok</td>';
   days.forEach(d=>{
-    if(isWeekend(d)){h+=`<td style="background:#b5aee0;color:#555">—</td>`;return;}
+    if(isWeekend(d)){h+='<td style="background:#b5aee0;color:#555">—</td>';return;}
     const cs=isCycleStart(d);
-    if(d<CYCLE_START){h+=`<td class="${cs?'ciclo-start':''}" style="color:#555">—</td>`;return;}
+    if(d<CYCLE_START){h+='<td class="' + (cs?'ciclo-start':'') + '" style="color:#555">—</td>';return;}
     const gok=MANAGERS.filter(m=>!isAbsent(m,d)).length;
     const col=gok<=1?'#ff6b6b':gok===2?'#ffb347':'#7adb78';
-    h+=`<td style="color:${col}" class="${cs?'ciclo-start':''}">${gok}</td>`;
+    h+='<td style="color:' + (col) + '" class="' + (cs?'ciclo-start':'') + '">' + (gok) + '</td>';
   });
-  h+=`</tr></tbody>`;
+  h+='</tr></tbody>';
   tbl.innerHTML=h;
 }
 
