@@ -600,7 +600,7 @@ function hasAbsInMonth(name,y,m){
 function getWeeks(y,m){const tot=new Date(y,m+1,0).getDate();const wks=[];let wk=[];for(let i=1;i<=tot;i++){const d=new Date(y,m,i);if(d.getDay()===1&&wk.length){wks.push(wk);wk=[];}wk.push(d);}if(wk.length)wks.push(wk);return wks;}
 
 // STATE
-let curY=new Date().getFullYear(),curM=new Date().getMonth(),curView='mes',curWk=0;
+let curY=2026,curM=4,curView='mes',curWk=0;
 let filterMode='todos',blockFilters=new Set(['Neg 1','Neg 2','Proc 1']),searchVal='',highlighted=new Set();
 let editMode=false;
 const overrides={};
@@ -732,16 +732,7 @@ function setView(v){
   else wb.style.display='none';
   render();
 }
-function changeMonth(dir){
-  const now=new Date();
-  const minY=now.getFullYear(),minM=now.getMonth();
-  curM+=dir;
-  if(curM>11){curM=0;curY++;}
-  if(curM<0){curM=11;curY--;}
-  // Não permite ir para meses anteriores ao atual
-  if(curY<minY||(curY===minY&&curM<minM)){curY=minY;curM=minM;}
-  curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();
-}
+function changeMonth(dir){curM+=dir;if(curM>11){curM=0;curY++;}if(curM<0){curM=11;curY--;}curWk=0;renderSbAnalysts();if(curView==='semana')buildWeekBtns();else if(curView==='ciclo')buildCicloBtns();render();}
 function changeWeek(i){curWk=i;buildWeekBtns();render();}
 function buildWeekBtns(){
   const wks=getWeeks(curY,curM);
@@ -833,7 +824,9 @@ function render(){
   days.forEach(d=>{
     const wk=isWeekend(d),tod=toKey(d)===today,cs=isCycleStart(d);
     const cn=cs?getCycleNumber(d):-1;
-    h+='<td class="hdr-dia' + (wk?' wknd':'') + (tod?' today-h':'') + (cs?' ciclo-start':'') + '" title="${cs?'↺ Início Ciclo ${cn+1}':\'\'}">\n      ' + (d.getDate()) + '${cs?'<br><span style="font-size:8px;color:#00dd00;font-weight:700">↺C${cn+1}</span>':'<br><span style="font-size:9px;opacity:.7">${WD_SHORT[d.getDay()]}</span>'}\n    </td>';
+    h+='<td class="hdr-dia' + (wk?' wknd':'') + (tod?' today-h':'') + (cs?' ciclo-start':'') + '" title="' + (cs?'&#8635; In&#237;cio Ciclo '+(cn+1):'') + '">' +
+      d.getDate() + (cs?'<br><span style="font-size:8px;color:#00dd00;font-weight:700">&#8635;C'+(cn+1)+'</span>':'<br><span style="font-size:9px;opacity:.7">'+WD_SHORT[d.getDay()]+'</span>') +
+    '</td>';
   });
   h+='</tr></thead><tbody>';
 
@@ -887,7 +880,11 @@ function render(){
       }
 
       const ne=name.replace(/'/g,"\\'");
-      h+='<td class="day-cell' + (tod?' today-col':'') + (cs?' ciclo-start':'') + (hasOv?' overridden':'') + (editMode&&!beforeStart?' editable':'') + '"\n        onclick="${editMode&&!beforeStart?'openCtx(event,'${ne}',new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}),'${current||''}')':\'\'}"\n        onmouseenter="showTip(event,\'' + (ne) + '\',new Date(' + (d.getFullYear()) + ',' + (d.getMonth()) + ',' + (d.getDate()) + '),\'' + (block||current||'') + '\',' + (cn) + ')"\n        onmouseleave="hideTip()">' + (cell) + '</td>';
+      const onclk=editMode&&!beforeStart?'openCtx(event,\''+ne+'\',new Date('+d.getFullYear()+','+d.getMonth()+','+d.getDate()+'),\''+(current||'')+'\')':'';
+      h+='<td class="day-cell'+(tod?' today-col':'')+(cs?' ciclo-start':'')+(hasOv?' overridden':'')+(editMode&&!beforeStart?' editable':'')+'"'+
+        ' onclick="'+onclk+'"'+
+        ' onmouseenter="showTip(event,\''+ne+'\',new Date('+d.getFullYear()+','+d.getMonth()+','+d.getDate()+'),\''+(block||current||'')+'\','+cn+')"'+
+        ' onmouseleave="hideTip()">'+cell+'</td>';
     });
     h+='</tr>';
   });
@@ -916,11 +913,7 @@ function render(){
   tbl.innerHTML=h;
 }
 
-try {
-  initAbsForm();renderSbAnalysts();render();
-} catch(err) {
-  document.getElementById('mainTable').innerHTML = '<tr><td style="padding:20px;color:red;font-size:12px;font-family:monospace">ERRO: ' + err.message + '<br>' + err.stack + '</td></tr>';
-}
+initAbsForm();renderSbAnalysts();render();
 
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
