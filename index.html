@@ -916,7 +916,11 @@ function render(){
   tbl.innerHTML=h;
 }
 
-initAbsForm();renderSbAnalysts();render();
+try {
+  initAbsForm();renderSbAnalysts();render();
+} catch(err) {
+  document.getElementById('mainTable').innerHTML = '<tr><td style="padding:20px;color:red;font-size:12px;font-family:monospace">ERRO: ' + err.message + '<br>' + err.stack + '</td></tr>';
+}
 
 // ── CONFIGURAÇÃO DE EQUIPE ──────────────────────────────────
 const TEAM_DEFAULT_ANALYSTS = [...ANALYSTS];
