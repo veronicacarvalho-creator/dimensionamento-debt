@@ -443,26 +443,26 @@ const FIXED_PERIOD_3={
 const FIXED_PERIOD_4={
   start:new Date(2026,8,29),end:new Date(2026,9,19),
   assignment:{
-    "Neg 2":[
-      {name:"Camila Nascimento",isMgr:true},
-      {name:"Elaine Cunico",isMgr:false},
-      {name:"Gabriel Miguel",isMgr:false},
-      {name:"Jose Nilzo",isMgr:false}
-    ],
     "Neg 1":[
-      {name:"Sophia Pereira",isMgr:true},
-      {name:"Mara Fukui",isMgr:false},
-      {name:"Marilia Goncalves",isMgr:false},
+      {name:"Camila Nascimento",isMgr:true},
+      {name:"Gabriel Miguel",isMgr:false},
+      {name:"Jose Nilzo",isMgr:false},
       {name:"Paolla Esteves",isMgr:false},
-      {name:"Rianne Sousa",isMgr:false}
+      {name:"Rubya Paula",isMgr:false}
+    ],
+    "Neg 2":[
+      {name:"Camilla Thome",isMgr:true},
+      {name:"Elaine Cunico",isMgr:false},
+      {name:"Mara Fukui",isMgr:false},
+      {name:"Marilia Goncalves",isMgr:false}
     ],
     "Proc 1":[
-      {name:"Camilla Thome",isMgr:true},
-      {name:"Rubya Paula",isMgr:false},
+      {name:"Sophia Pereira",isMgr:true},
       {name:"Adriana Rodrigues",isMgr:false},
       {name:"Aline Machado",isMgr:false},
       {name:"Almir Goncalves",isMgr:false},
-      {name:"Andrea Nascimento",isMgr:false}
+      {name:"Andrea Nascimento",isMgr:false},
+      {name:"Rianne Sousa",isMgr:false}
     ]
   }
 };
@@ -481,13 +481,24 @@ const NAO_FOCAIS = [
   "Marilia Goncalves","Paolla Esteves","Rianne Sousa","Rubya Paula"
 ];
 
-// Ciclo 5 como base: Neg2=CamilaN, Neg1=Sophia, Proc1=CamillaT
-// Não-focais ciclo 5 (shift 4 do ciclo 4):
-// Neg2: Elaine,Gabriel,Jose | Neg1: Mara,Marilia,Paolla,Rianne | Proc1: Rubya,Adriana,Aline,Almir,Andrea
+// Ciclo 5: Neg1=CamilaN, Neg2=CamillaT, Proc1=Sophia
+// Rotação focais: a cada ciclo shift +1
+// C5: Neg1=CamilaN, Neg2=CamillaT, Proc1=Sophia
+// C6: Neg1=Sophia,  Neg2=CamilaN,  Proc1=CamillaT
+// C7: Neg1=CamillaT,Neg2=Sophia,   Proc1=CamilaN
+// C8: = C5 (volta)
+var focalRotations = [
+  {"Neg 1":"Sophia Pereira",   "Neg 2":"Camila Nascimento", "Proc 1":"Camilla Thome"},   // C6
+  {"Neg 1":"Camilla Thome",    "Neg 2":"Sophia Pereira",    "Proc 1":"Camila Nascimento"},// C7
+  {"Neg 1":"Camila Nascimento","Neg 2":"Camilla Thome",     "Proc 1":"Sophia Pereira"},   // C8=C5
+];
+
+// Não-focais ciclo 5:
+// Neg1: Gabriel,Jose,Paolla,Rubya | Neg2: Elaine,Mara,Marilia | Proc1: Adriana,Aline,Almir,Andrea,Rianne
 const BASE_NF_C5 = [
-  "Elaine Cunico","Gabriel Miguel","Jose Nilzo",      // Neg2 (3)
-  "Mara Fukui","Marilia Goncalves","Paolla Esteves","Rianne Sousa",  // Neg1 (4)
-  "Rubya Paula","Adriana Rodrigues","Aline Machado","Almir Goncalves","Andrea Nascimento" // Proc1 (5)
+  "Gabriel Miguel","Jose Nilzo","Paolla Esteves","Rubya Paula",       // Neg1 (4)
+  "Elaine Cunico","Mara Fukui","Marilia Goncalves",                   // Neg2 (3)
+  "Adriana Rodrigues","Aline Machado","Almir Goncalves","Andrea Nascimento","Rianne Sousa" // Proc1 (5)
 ];
 
 function countWorkdays(from, to) {
@@ -502,47 +513,25 @@ function countWorkdays(from, to) {
 
 function getAutoRotationAssignment(date) {
   if(date < ROTATION_START) return null;
-  // Quantos ciclos passaram desde o início da rotação automática
   var wdFromStart = countWorkdays(ROTATION_START, date);
-  var cycleIdx = Math.floor((wdFromStart-1) / CYCLE_DURATION_DAYS); // 0-based
-  
-  // Rotação das focais (a cada ciclo, shift de 1 posição)
-  // Ciclo 0 (C6): CamilaN→Proc1, Sophia→Neg2, CamillaT→Neg1
-  // Ciclo 1 (C7): CamilaN→Neg1, Sophia→Proc1, CamillaT→Neg2
-  // Ciclo 2 (C8): CamilaN→Neg2, Sophia→Neg1, CamillaT→Proc1 (= ciclo 5)
-  var focalRotations = [
-    // [Neg2, Neg1, Proc1]
-    ["Sophia Pereira",   "Camilla Thome",    "Camila Nascimento"], // C6
-    ["Camilla Thome",    "Camila Nascimento", "Sophia Pereira"],   // C7
-    ["Camila Nascimento","Sophia Pereira",    "Camilla Thome"],    // C8 (= C5)
-  ];
+  var cycleIdx = Math.floor((wdFromStart-1) / CYCLE_DURATION_DAYS);
   var fRot = focalRotations[cycleIdx % 3];
-  
-  // Rotação dos não-focais: shift de 4 a cada ciclo
   var shift = ((cycleIdx + 1) * 4) % NAO_FOCAIS.length;
   var nf = BASE_NF_C5.slice(shift).concat(BASE_NF_C5.slice(0, shift));
-  
   return {
-    "Neg 2": [
-      {name:fRot[0],isMgr:true},
-      {name:nf[0],isMgr:false},
-      {name:nf[1],isMgr:false},
-      {name:nf[2],isMgr:false}
-    ],
     "Neg 1": [
-      {name:fRot[1],isMgr:true},
-      {name:nf[3],isMgr:false},
-      {name:nf[4],isMgr:false},
-      {name:nf[5],isMgr:false},
-      {name:nf[6],isMgr:false}
+      {name:fRot["Neg 1"],isMgr:true},
+      {name:nf[0],isMgr:false},{name:nf[1],isMgr:false},
+      {name:nf[2],isMgr:false},{name:nf[3],isMgr:false}
+    ],
+    "Neg 2": [
+      {name:fRot["Neg 2"],isMgr:true},
+      {name:nf[4],isMgr:false},{name:nf[5],isMgr:false},{name:nf[6],isMgr:false}
     ],
     "Proc 1": [
-      {name:fRot[2],isMgr:true},
-      {name:nf[7],isMgr:false},
-      {name:nf[8],isMgr:false},
-      {name:nf[9],isMgr:false},
-      {name:nf[10],isMgr:false},
-      {name:nf[11],isMgr:false}
+      {name:fRot["Proc 1"],isMgr:true},
+      {name:nf[7],isMgr:false},{name:nf[8],isMgr:false},
+      {name:nf[9],isMgr:false},{name:nf[10],isMgr:false},{name:nf[11],isMgr:false}
     ]
   };
 }
